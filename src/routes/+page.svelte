@@ -1,14 +1,16 @@
 <script lang="ts">
-    import { getOperationAnchor, getSchemaAnchor, resolveRef } from "#lib";
+    import { getOperationAnchor, getSchemaAnchor} from "#lib";
     import Operation from "#lib/Operation.svelte";
     import Schema from "#lib/Schema/Schema.svelte";
-    import { specStore } from "#lib/stores/Spec.svelte.ts";
+    import { specStore } from "#lib/stores/Spec.svelte.js";
     import spec from "./spec.json"
 
     const paths = spec.paths
     const schemas = spec.components.schemas
 
     specStore.spec = spec;
+
+    let schemaMaxResolutionDepth = $state(3);
 </script>
 
 <div class="h-screen w-full flex">
@@ -17,7 +19,7 @@
             <a href="#schemas">Schemas</a>
         </h2>
         {#each Object.keys(schemas) as schema (schema)}
-            {@const anchor = getSchemaAnchor(schema)}
+            {@const anchor = getSchemaAnchor(`#/components/schemas/${schema}`)}
             <a class="truncate block" href="#{anchor}">
                 <span>{schema}</span>
             </a>
@@ -41,15 +43,24 @@
             <h2 id="schemas" class="pt-2 border-b">
                 Schemas
             </h2>
+            <div class="font-mono text-sm">
+                <span class="">
+                    Profondeur max:
+                    <input class="w-fit appearance-none"
+                        min="0"
+                        type="number" bind:value={schemaMaxResolutionDepth}>
+                </span>
+            </div>
             {#each Object.entries(schemas) as [name, schema] (name)}
-                {@const anchor = getSchemaAnchor(name)}
-                <div
-                    id={anchor}
-                    class="p-2 bg-gray-50 rounded border border-gray-200"
+                {@const anchor = getSchemaAnchor(`#/components/schemas/${name}`)}
+                <div id={anchor}
+                    class="p-2 bg-gray-50 rounded border border-gray-200
+                    target:animate-hightlight"
                 >
                     <Schema
                         {name}
                         schema={schema as any}
+                        resolutionDepth={schemaMaxResolutionDepth}
                         open
                     />
                 </div>

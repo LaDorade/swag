@@ -1,4 +1,6 @@
 <script lang="ts">
+    import Schema from "./Schema/Schema.svelte";
+
     interface Props {
         parameters: {
           name: string;
@@ -27,22 +29,23 @@
     }));
 </script>
 
+{#snippet paramList(params: Props['parameters'])}
+    <ul class="flex flex-col gap-2 list-disc list-inside pl-2">
+        {#each params as param (param)}
+            <Schema name={param.name} schema={param.schema}
+                resolutionDepth={3} />
+        {/each}
+    </ul>
+{/snippet}
+
 <details open class="p-1 flex flex-col gap-2 border rounded border-gray-200">
     <summary class="text-lg">Parameters</summary>
     {#if pathParams.length}
         <span class="">Path Params</span>
-        <ul class="flex flex-col gap-2 list-disc list-inside">
-            {#each pathParams as param (param)}
-                <li>{param.name}: {JSON.stringify(param.schema)}</li>
-            {/each}
-        </ul>
+        {@render paramList(pathParams)}
     {/if}
     {#if queryParams.length}
         <span class="">Query Params</span>
-        <ul class="flex flex-col gap-2 list-disc list-inside">
-            {#each queryParams as param (param)}
-                <li>{param.name}: {JSON.stringify(param.schema)}</li>
-            {/each}
-        </ul>
+        {@render paramList(queryParams)}
     {/if}
 </details>
