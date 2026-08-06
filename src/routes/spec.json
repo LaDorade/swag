@@ -852,10 +852,40 @@
         "type": "object",
         "properties": {
           "bs": {
-            "$ref": "#/components/schemas/b"
+            "items": {
+              "$ref": "#/components/schemas/b"
+            }
           },
           "g": {
             "$ref": "#/components/schemas/g"
+          }
+        }
+      },
+      "za": {
+        "type": "object",
+        "properties": {
+          "zob": {
+            "type": "object",
+            "properties": {
+              "zoba": {
+                "type": "object",
+                "properties": {
+                  "zobaz": {
+                    "type": "object",
+                    "properties": {
+                      "zobazob": {
+                        "type": "object",
+                        "properties": {
+                          "zobazobz": {
+                            "$ref": "#/components/schemas/h"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       },
@@ -892,11 +922,11 @@
           }
         }
       },
-      "address": {
-        "$ref": "#/components/schemas/h"
-      },
       "f": {
         "$ref": "#/components/schemas/e"
+      },
+      "address": {
+        "$ref": "#/components/schemas/h"
       },
       "h": {
         "type": "string"

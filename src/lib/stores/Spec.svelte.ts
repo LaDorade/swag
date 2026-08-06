@@ -12,6 +12,77 @@ type ResolutionResult =
         origin: UnresolvedSchema;
     }
 
+
+class Resolver {
+    schema: UnresolvedSchema;
+    path: UnresolvedSchema[];
+    origin: UnresolvedSchema;
+
+    private constructor(schema: UnresolvedSchema) {
+        this.schema = schema;
+        this.path = [schema];
+        this.origin = schema;
+    }
+
+    static resolve(schema: UnresolvedSchema, depth: number): ResolutionResult {
+        const resolver = new Resolver(schema);
+        const resolution = resolver._resolve(depth);
+        return resolution;
+    }
+
+    _resolve(depth: number): ResolutionResult {
+        if (!this.schema.$ref) {
+            return {
+                origin: this.origin,
+                type: 'inline',
+                schema: this.schema as ResolvedSchema,
+                path: this.path,
+                resolved: true
+            }
+        }
+
+        const schemaFromRef = specStore.resolveRef(this.schema.$ref)
+        if (!schemaFromRef) {
+            return {
+                origin: this.origin,
+                type: 'unresolved',
+                schema: this.schema,
+                path: this.path,
+                resolved: false
+            }
+        }
+
+        if (depth <= 0) {
+            return {
+                origin: this.origin,
+                type: 'maxDepth',
+                schema: this.schema,
+                path: this.path,
+                resolved: false
+            }
+        }
+
+        // TODO: cycle detection instead of depht - 1
+        const resolved = Resolver.resolve(schemaFromRef, depth - 1);
+        if (resolved.type === 'inline') {
+            return {
+                type: 'resolved',
+                resolved: true,
+                origin: this.origin,
+                schema: resolved.schema,
+                path: [...this.path, ...resolved.path]
+            }
+        } else {
+            this.path.push(resolved.schema)
+            return {
+                ...resolved,
+                origin: this.origin,
+                path: [...this.path, ...resolved.path]
+            }
+        }
+    }
+}
+
 class Spec {
     spec: object = {}
 
@@ -39,64 +110,8 @@ class Spec {
         return cur;
     }
 
-    resolveSchema = (
-        schema: UnresolvedSchema,
-        depth: number,
-        ctx: { path: UnresolvedSchema[], origin?: UnresolvedSchema }
-            = { path: []}
-    ): ResolutionResult => {
-        ctx.path.push(schema)
-        if (!ctx.origin) {
-            ctx.origin = schema;
-        }
-        if (!schema.$ref) {
-            return {
-                origin: ctx.origin,
-                type: 'inline',
-                schema: schema as ResolvedSchema,
-                path: ctx.path,
-                resolved: true
-            }
-        }
-
-        const schemaFromRef = this.resolveRef(schema.$ref)
-        if (!schemaFromRef) {
-            return {
-                origin: ctx.origin,
-                type: 'unresolved',
-                schema,
-                path: ctx.path,
-                resolved: false
-            }
-        }
-
-        if (depth <= 0) {
-            return {
-                origin: ctx.origin,
-                type: 'maxDepth',
-                schema,
-                path: ctx.path,
-                resolved: false
-            }
-        }
-
-        const resolved = this.resolveSchema(
-            schemaFromRef,
-            depth - 1,
-            ctx
-        );
-        if (resolved.type === 'inline') {
-            return {
-                origin: ctx.origin,
-                type: 'resolved',
-                schema: resolved.schema,
-                path: resolved.path,
-                resolved: true
-            }
-        } else {
-            ctx.path.push(resolved.schema)
-            return resolved
-        }
+    resolveSchema (schema: UnresolvedSchema, depth: number): ResolutionResult {
+        return Resolver.resolve(schema, depth)
     }
 }
 
