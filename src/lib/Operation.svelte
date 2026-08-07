@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { getOperationAnchor } from "#lib";
+    import { getOperationAnchor, methodToColor } from "#lib";
     import Parameters from "./Parameters.svelte";
     import RequestBody from "./RequestBody.svelte";
     import Responses from "./Responses.svelte";
@@ -44,32 +44,46 @@
     let responses = $derived(operation.operationData?.responses ?? {})
 
     let anchor = $derived(getOperationAnchor(method, path))
+
+    let methodColor = $derived(methodToColor(method))
 </script>
 
-<details
+<div
     id={anchor}
-    bind:open
-    class="w-full p-2 flex flex-col open:gap-2 bg-gray-50 border border-gray-300 rounded"
+    class="text-sm w-full flex flex-col overflow-none bg-gray-50 border border-gray-200 rounded
+    target:animate-hightlight"
 >
-    <summary class="font-mono">
-        <span
-            class="h-fit px-2 py-1 rounded-sm bg-blue-100"
-        >[{method}]</span>
-        <span>{path}</span>
-        <span class="text-sm text-gray-600 italic">{summary}</span>
-    </summary>
-    <div class="flex flex-col gap-2">
-        {#if description}
-            {description}
+    <button class="h-full w-full p-2 flex items-center gap-2 font-mono
+        cursor-pointer {methodColor} border-gray-200"
+        title={summary ?? path}
+        class:border-b={open}
+        onclick={() => open = !open}>
+        <span class="text-base uppercase w-20">{method}</span>
+        <span class="border-l border-gray-300 h-6"></span>
+        <div class="pl-2 py-0.5 text-left w-full flex items-baseline gap-2 bg-geray-50 rounded overflow-hidden">
+            <span class="font-bold">{path}</span>
+            <i class="text-xs text-gray-600 italic truncate w-full">{summary}</i>
+            <span class="text-gray-600 ml-auto pr-2">{open ? '▲' : '▼'}</span>
+        </div>
+    </button>
+
+    <!-- Lazy eval -->
+    {#if open}
+        <div
+            class="p-2 flex flex-col gap-2"
+            >
+            {#if description}
+                {description}
+                {/if}
+            {#if parameters?.length}
+                <Parameters parameters={parameters as any} />
+                {/if}
+            {#if requestBody}
+                <RequestBody {requestBody} />
+                {/if}
+            {#if responses}
+                <Responses responses={responses as any} />
             {/if}
-        {#if parameters?.length}
-            <Parameters parameters={parameters as any} />
-            {/if}
-        {#if requestBody}
-            <RequestBody {requestBody} />
-            {/if}
-        {#if responses}
-            <Responses responses={responses as any} />
-        {/if}
-    </div>
-</details>
+        </div>
+    {/if}
+</div>

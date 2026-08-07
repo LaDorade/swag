@@ -17,3 +17,11 @@ export function deduceSchemaType(s: UnresolvedSchema): string {
     if (s.properties) return 'object'
     return ''
 }
+
+export function methodToColor(method: string): string {
+    if (method === 'get') return 'bg-blue-100/40'
+    if (method === 'post') return 'bg-green-100/40'
+    if (method === 'put') return 'bg-orange-100/40'
+    if (method === 'delete') return 'bg-red-100/40'
+    return 'bg-gray-100'
+}

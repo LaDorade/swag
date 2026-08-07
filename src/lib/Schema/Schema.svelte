@@ -143,8 +143,7 @@
             <span class="pl-1 text-xs text-gray-400">{fullName}</span>
         {/if}
         {#if foldable}
-            <span class="text-gray-800">
-                {open ? '▲' : '▼'}</span>
+            <span class="text-gray-800">{open ? '▲' : '▼'}</span>
         {/if}
     </div>
 {/snippet}
