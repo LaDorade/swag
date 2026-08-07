@@ -37,11 +37,11 @@
     let shouldResolveInnerSchema = $derived.by(() => {
         if (resolvedSchema?.resolutionType === 'resolved'){
             if (resolutionDepth <= 1) {
-                return settings.alwaysResolveArray;
+                return settings.resolution.alwaysResolveArraySubSchema;
             }
         } else if (resolvedSchema?.resolutionType === 'inline'){
             if (resolutionDepth <= 0) {
-                return settings.alwaysResolveArray;
+                return settings.resolution.alwaysResolveArraySubSchema;
             }
         }
         return resolvedSchema.resolved;
@@ -65,7 +65,7 @@
     let newDepthInnerArray = $derived.by(() => {
         let depth = newDepth - 1;
         // Special case of inline schema array with inline subSchema
-        if (settings.alwaysResolveArray
+        if (settings.resolution.alwaysResolveArraySubSchema
             || (resolvedSchema.resolutionType === 'inline'
                 && resolvedArrayInnerSchema?.resolutionType === 'inline')) {
             depth += 1;
@@ -81,7 +81,7 @@
     let foldable = $derived(
         resolvedSchema.schema.properties
         || (resolvedSchema.schema.items
-            && (settings.showItemsLineOnArray
+            && (settings.display.showItemsLineOnArray
                 || (resolvedArrayInnerSchema?.resolved
                     && resolvedArrayInnerSchema.schema.properties)))
     )
@@ -91,7 +91,7 @@
         if (name) {
             return true;
         }
-        return settings.showItemsLineOnArray;
+        return settings.display.showItemsLineOnArray;
     })
 
     let schemaType = $derived(deduceSchemaType(resolvedSchema.schema))
@@ -139,7 +139,7 @@
             <span class="text-xs italic text-red-800">
                 -&rsaquo; {resolvedSchema.schema.$ref} (unresolved)</span>
         {/if}
-        {#if parentName}
+        {#if parentName && settings.display.showPropertiesPaths}
             <span class="pl-1 text-xs text-gray-400">{fullName}</span>
         {/if}
         {#if foldable}

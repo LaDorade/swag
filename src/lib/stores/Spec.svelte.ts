@@ -18,12 +18,13 @@ class Resolver {
     _schema: UnresolvedSchema;
     _path: UnresolvedSchema[];
     _origin: UnresolvedSchema;
-    _forwardRefResolutionDepth = $derived(settings.forwardReferenceMaxDemth)
+    _forwardRefResolutionDepth: number;
 
     private constructor(schema: UnresolvedSchema) {
         this._schema = schema;
         this._path = [schema];
         this._origin = schema;
+        this._forwardRefResolutionDepth = $derived(settings.resolution.forwardReferenceMaxDepth);
     }
 
     static resolve(schema: UnresolvedSchema, depth: number): ResolutionResult {

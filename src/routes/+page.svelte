@@ -45,23 +45,40 @@
             <h2 id="schemas" class="pt-2 border-b">
                 Schemas
             </h2>
-            <div class="font-mono text-sm">
-                <label class="">
-                    Profondeur max:
-                    <input class="w-fit appearance-none"
-                        min="0"
-                        type="number" bind:value={settings.schemaMaxResolutionDepth}>
-                </label>
-                <label class="">
-                    Toujours résoudre les arrays
-                    <input class="inline"
-                        type="checkbox" bind:checked={settings.alwaysResolveArray}>
-                </label>
-                <label class="">
-                    Afficher la ligne "Items" dans les arrays
-                    <input class="inline"
-                        type="checkbox" bind:checked={settings.showItemsLineOnArray}>
-                </label>
+            <div class="font-mono text-xs grid grid-cols-2 gap-4">
+                <div class="p-2 flex flex-col border rounded">
+                    <span class="font-bold text-base">Resolution des $ref</span>
+                    <label class="flex items-center gap-2">
+                        Profondeur max:
+                        <input class="w-fit appearance-none"
+                            min="0"
+                            type="number" bind:value={settings.resolution.schemaMaxResolutionDepth}>
+                    </label>
+                    <label class="flex items-center gap-2">
+                        Profondeur max (références directes)
+                        <input class="w-fit appearance-none"
+                            min="0"
+                            type="number" bind:value={settings.resolution.forwardReferenceMaxDepth}>
+                    </label>
+                    <label class="flex items-center gap-2">
+                        Toujours résoudre les sous-schémas des arrays
+                        <input class="inline"
+                            type="checkbox" bind:checked={settings.resolution.alwaysResolveArraySubSchema}>
+                    </label>
+                </div>
+                <div class="p-2 flex flex-col border rounded">
+                    <span class="font-bold text-base">Display</span>
+                    <label class="flex items-center gap-2">
+                        Afficher les chemins des propriétés
+                        <input class="inline"
+                            type="checkbox" bind:checked={settings.display.showPropertiesPaths}>
+                    </label>
+                    <label class="flex items-center gap-2">
+                        Afficher la ligne "Items" dans les arrays
+                        <input class="inline"
+                            type="checkbox" bind:checked={settings.display.showItemsLineOnArray}>
+                    </label>
+                </div>
             </div>
             {#each Object.entries(schemas) as [name, schema] (name)}
                 {@const anchor = getSchemaAnchor(`#/components/schemas/${name}`)}
@@ -72,7 +89,7 @@
                     <Schema
                         {name}
                         schema={schema as any}
-                        resolutionDepth={settings.schemaMaxResolutionDepth}
+                        resolutionDepth={settings.resolution.schemaMaxResolutionDepth}
                         open
                     />
                 </div>
