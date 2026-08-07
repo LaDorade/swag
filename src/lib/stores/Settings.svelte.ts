@@ -6,6 +6,8 @@ class Settings {
 
     schemaMaxResolutionDepth = $state<number>(3)
     forwardReferenceMaxDemth = $state<number>(3)
+
+    showItemsLineOnArray = $state<boolean>(false);
 }
 
 export const settings = new Settings()

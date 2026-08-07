@@ -853,7 +853,7 @@
         "properties": {
           "bs": {
             "items": {
-              "$ref": "#/components/schemas/b"
+              "$ref": "#/components/schemas/h"
             }
           },
           "hop": {
@@ -866,7 +866,7 @@
                 "bbb": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/b"
+                    "$ref": ""
                   }
                 }
               }
@@ -932,6 +932,11 @@
         "properties": {
           "name": {
             "type": "number"
+          },
+          "array": {
+            "items": {
+              "type": "string"
+            }
           },
           "address": {
             "$ref": "#/components/schemas/address"

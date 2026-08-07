@@ -35,11 +35,11 @@
 
 
     let shouldResolveInnerSchema = $derived.by(() => {
-        if (resolvedSchema?.type === 'resolved'){
+        if (resolvedSchema?.resolutionType === 'resolved'){
             if (resolutionDepth <= 1) {
                 return settings.alwaysResolveArray;
             }
-        } else if (resolvedSchema?.type === 'inline'){
+        } else if (resolvedSchema?.resolutionType === 'inline'){
             if (resolutionDepth <= 0) {
                 return settings.alwaysResolveArray;
             }
@@ -55,23 +55,19 @@
         : null
     )
     // Inline ARE in the schema, so we dont count them
-    // except for inline array with resolved inner schema
-    //  because the inner "array" element (in the spec) is not shown in the UI
-    //  (not like Swagger where there is a "Items" line)
     let newDepth = $derived.by(() => {
         let depth = resolutionDepth - 1;
-        if (resolvedSchema.type === 'inline'
-        ) {
+        if (resolvedSchema.resolutionType === 'inline') {
             depth += 1;
         }
         return Math.max(depth, 0);
     })
     let newDepthInnerArray = $derived.by(() => {
         let depth = newDepth - 1;
-        if (resolvedSchema.type === 'inline'
-            && resolvedArrayInnerSchema?.type === 'inline') {
-            depth += 1;
-        } else if (settings.alwaysResolveArray) {
+        // Special case of inline schema array with inline subSchema
+        if (settings.alwaysResolveArray
+            || (resolvedSchema.resolutionType === 'inline'
+                && resolvedArrayInnerSchema?.resolutionType === 'inline')) {
             depth += 1;
         }
         return Math.max(depth, 0);
@@ -83,19 +79,26 @@
     // properties: {...}
     // items: {...}
     let foldable = $derived(
-           resolvedArrayInnerSchema?.resolved
-        || resolvedSchema.schema.properties)
+        resolvedSchema.schema.properties
+        || (resolvedSchema.schema.items
+            && (settings.showItemsLineOnArray
+                || (resolvedArrayInnerSchema?.resolved
+                    && resolvedArrayInnerSchema.schema.properties)))
+    )
 
     // Dont render head (infos) objects with no name (likely only referenced in array)
-    let renderHead = $derived(
-        !(resolvedSchema.schema.properties && !name)
-    )
+    let renderHead = $derived.by(() => {
+        if (name) {
+            return true;
+        }
+        return settings.showItemsLineOnArray;
+    })
 
     let schemaType = $derived(deduceSchemaType(resolvedSchema.schema))
     let properties = $derived(Object.entries(resolvedSchema.schema.properties ?? {}))
 </script>
 
-{#snippet ref(r: string)}
+{#snippet ref (r: string)}
     <a onclick={e => e.stopPropagation()} href="#{getSchemaAnchor(r)}"
         class="hover:underline">{r}</a>
 {/snippet}
@@ -104,11 +107,13 @@
     <div class="w-full h-full px-1 py-0.5">
         {#if name}
             <span class="font-mono">{name}</span>
-            {#if resolvedSchema.type === 'resolved' && resolvedSchema.origin.$ref}
-                <span class="text-xs italic text-gray-500">-&rsaquo; {@render ref(resolvedSchema.origin.$ref)}</span>
-            {/if}
+        {:else}
+            <span class="font-mono text-sm text-gray-600">Items:</span>
         {/if}
         {#if resolvedSchema.resolved}
+            {#if resolvedSchema.resolutionType === 'resolved' && resolvedSchema.origin.$ref}
+                <span class="text-xs italic text-gray-500">-&rsaquo; {@render ref(resolvedSchema.origin.$ref)}</span>
+            {/if}
             {#if schemaType}
                 <span class="text-sm italic font-mono text-blue-700">
                     {schemaType}{#if resolvedArrayInnerSchema}
@@ -127,10 +132,10 @@
             {#if resolvedSchema.schema.format}
                 <span class="text-xs font-mono text-gray-700">({resolvedSchema.schema.format})</span>
             {/if}
-        {:else if resolvedSchema.type === 'maxDepth'}
+        {:else if resolvedSchema.resolutionType === 'maxDepth'}
             <span class="text-xs italic text-gray-500">
                 -&rsaquo; {@render ref(resolvedSchema.origin.$ref)} (max depth)</span>
-        {:else if resolvedSchema.type === 'unresolved'}
+        {:else if resolvedSchema.resolutionType === 'unresolved'}
             <span class="text-xs italic text-red-800">
                 -&rsaquo; {resolvedSchema.schema.$ref} (unresolved)</span>
         {/if}
@@ -141,10 +146,6 @@
             <span class="text-gray-800">
                 {open ? '▲' : '▼'}</span>
         {/if}
-        <span class="text-sm">
-            {name ?? ''}, {resolvedSchema.type}({resolvedArrayInnerSchema?.type}), {resolutionDepth}, {newDepth}
-        </span>
-
     </div>
 {/snippet}
 

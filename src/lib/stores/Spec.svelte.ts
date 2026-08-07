@@ -3,10 +3,10 @@ import { settings } from "./Settings.svelte";
 
 
 type ResolutionResult =
-    |({ type: 'inline';     schema: ResolvedSchema }
-    | { type: 'resolved';   schema: ResolvedSchema }
-    | { type: 'maxDepth';   schema: UnresolvedSchema }
-    | { type: 'unresolved'; schema: UnresolvedSchema})
+    |({ resolutionType: 'inline';     schema: ResolvedSchema }
+    | { resolutionType: 'resolved';   schema: ResolvedSchema }
+    | { resolutionType: 'maxDepth';   schema: UnresolvedSchema }
+    | { resolutionType: 'unresolved'; schema: UnresolvedSchema})
     & {
         path: UnresolvedSchema[];
         resolved: boolean;
@@ -36,7 +36,7 @@ class Resolver {
         if (!this._schema.$ref) {
             return {
                 origin: this._origin,
-                type: 'inline',
+                resolutionType: 'inline',
                 schema: this._schema as ResolvedSchema,
                 path: this._path,
                 resolved: true
@@ -47,7 +47,7 @@ class Resolver {
         if (!schemaFromRef) {
             return {
                 origin: this._origin,
-                type: 'unresolved',
+                resolutionType: 'unresolved',
                 schema: this._schema,
                 path: this._path,
                 resolved: false
@@ -57,7 +57,7 @@ class Resolver {
         if (depth <= 0) {
             return {
                 origin: this._origin,
-                type: 'maxDepth',
+                resolutionType: 'maxDepth',
                 schema: this._schema,
                 path: this._path,
                 resolved: false
@@ -66,9 +66,9 @@ class Resolver {
 
         // TODO: cycle detection instead of depht - 1
         const resolved = Resolver.resolve(schemaFromRef, this._forwardRefResolutionDepth - 1);
-        if (resolved.type === 'inline') {
+        if (resolved.resolutionType === 'inline') {
             return {
-                type: 'resolved',
+                resolutionType: 'resolved',
                 resolved: true,
                 origin: this._origin,
                 schema: resolved.schema,

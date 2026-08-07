@@ -57,6 +57,11 @@
                     <input class="inline"
                         type="checkbox" bind:checked={settings.alwaysResolveArray}>
                 </label>
+                <label class="">
+                    Afficher la ligne "Items" dans les arrays
+                    <input class="inline"
+                        type="checkbox" bind:checked={settings.showItemsLineOnArray}>
+                </label>
             </div>
             {#each Object.entries(schemas) as [name, schema] (name)}
                 {@const anchor = getSchemaAnchor(`#/components/schemas/${name}`)}
