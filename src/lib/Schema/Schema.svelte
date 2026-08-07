@@ -1,6 +1,7 @@
 <script lang="ts">
     import Schema from "./Schema.svelte"
     import { specStore } from "#lib/stores/Spec.svelte.js";
+    import { settings } from "#lib/stores/Settings.svelte.js";
     import { deduceSchemaType, getSchemaAnchor } from "#lib";
     import type { UnresolvedSchema } from "#types";
 
@@ -31,13 +32,24 @@
     })
 
     let resolvedSchema = $derived(specStore.resolveSchema(s, resolutionDepth))
+
+    // Inline ARE in the schema, so we dont count them
+    // except for inline array with resolved inner schema
+    //  because the inner "array" element (in the spec) is not shown in the UI
+    //  (not like Swagger where there is a "Items" line)
+    let newDepth   = $derived(
+        resolvedSchema.type === 'inline'
+        ? resolutionDepth
+        : resolutionDepth - 1)
     // If we resolved an array, we want to resolve its inner type too
     // Special case when the array is declared inline but the inner type is a $ref
-    let innerSchemaDepth = $derived(
-        resolvedSchema.type === 'inline' && resolutionDepth <= 0
-        ? 1
-        : resolutionDepth
-    )
+    let innerSchemaDepth = $derived.by(() => {
+        if (settings.alwaysResolveArray && resolvedSchema.type === 'inline') {
+            return newDepth + 1;
+        } else {
+            return newDepth;
+        }
+    })
     let resolvedArrayInnerSchema = $derived(
         resolvedSchema.schema.items
         ? specStore.resolveSchema(resolvedSchema.schema.items, innerSchemaDepth)
@@ -60,11 +72,6 @@
 
     let schemaType = $derived(deduceSchemaType(resolvedSchema.schema))
     let properties = $derived(Object.entries(resolvedSchema.schema.properties ?? {}))
-    // Inline ARE in the schema, so we dont count them
-    let newDepth   = $derived(
-        resolvedSchema.type === 'inline'
-        ? resolutionDepth
-        : resolutionDepth - 1)
 </script>
 
 {#snippet ref(r: string)}
@@ -83,18 +90,13 @@
         {#if resolvedSchema.resolved}
             {#if schemaType}
                 <span class="text-sm italic font-mono text-blue-700">
-                    {#if resolvedArrayInnerSchema}
-                        {console.log(resolvedSchema, resolutionDepth)}
-                        {console.log(resolvedArrayInnerSchema, resolutionDepth)}
-                        {#if resolvedArrayInnerSchema.schema.type}
-                            {schemaType}({resolvedArrayInnerSchema.schema.type})
-                        {:else if resolvedArrayInnerSchema.schema.$ref}
-                            {schemaType}({@render ref(resolvedArrayInnerSchema.schema.$ref)})
-                        {:else}
-                            {schemaType}
+                    {schemaType}{#if resolvedArrayInnerSchema}
+                        {console.log(resolvedArrayInnerSchema, innerSchemaDepth)}
+                        ({#if resolvedArrayInnerSchema.origin.$ref}
+                            <span class="text-xs italic text-gray-500">
+                                -&rsaquo; {@render ref(resolvedArrayInnerSchema.origin.$ref)}</span>
                         {/if}
-                    {:else}
-                        {schemaType}
+                        {resolvedArrayInnerSchema.schema.type})
                     {/if}
                 </span>
             {/if}
@@ -115,6 +117,7 @@
             <span class="text-gray-800">
                 {open ? '▲' : '▼'}</span>
         {/if}
+        {resolutionDepth}, {newDepth}
 
     </div>
 {/snippet}
@@ -142,10 +145,10 @@
             // type: 'string'
             // properties: {...}
             // items: {...} -->
-        {#if resolvedArrayInnerSchema?.schema}
+        {#if resolvedArrayInnerSchema?.resolved}
             <Schema open
                 schema={resolvedArrayInnerSchema.schema}
-                resolutionDepth={newDepth}
+                resolutionDepth={innerSchemaDepth - 1}
                 parentName="{fullName}[i]"
                 />
         {/if}
