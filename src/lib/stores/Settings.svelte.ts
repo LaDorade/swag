@@ -5,6 +5,7 @@ class Settings {
     alwaysResolveArray = $state<boolean>(true)
 
     schemaMaxResolutionDepth = $state<number>(3)
+    forwardReferenceMaxDemth = $state<number>(3)
 }
 
 export const settings = new Settings()

@@ -856,6 +856,22 @@
               "$ref": "#/components/schemas/b"
             }
           },
+          "hop": {
+            "items": {
+              "type": "object",
+              "properties": {
+                "aaa": {
+                  "type": "string"
+                },
+                "bbb": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/b"
+                  }
+                }
+              }
+            }
+          },
           "g": {
             "$ref": "#/components/schemas/g"
           }

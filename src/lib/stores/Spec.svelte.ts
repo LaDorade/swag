@@ -1,4 +1,5 @@
 import type { ResolvedSchema, UnresolvedSchema } from "#types"
+import { settings } from "./Settings.svelte";
 
 
 type ResolutionResult =
@@ -14,14 +15,15 @@ type ResolutionResult =
 
 
 class Resolver {
-    schema: UnresolvedSchema;
-    path: UnresolvedSchema[];
-    origin: UnresolvedSchema;
+    _schema: UnresolvedSchema;
+    _path: UnresolvedSchema[];
+    _origin: UnresolvedSchema;
+    _forwardRefResolutionDepth = $derived(settings.forwardReferenceMaxDemth)
 
     private constructor(schema: UnresolvedSchema) {
-        this.schema = schema;
-        this.path = [schema];
-        this.origin = schema;
+        this._schema = schema;
+        this._path = [schema];
+        this._origin = schema;
     }
 
     static resolve(schema: UnresolvedSchema, depth: number): ResolutionResult {
@@ -31,53 +33,53 @@ class Resolver {
     }
 
     _resolve(depth: number): ResolutionResult {
-        if (!this.schema.$ref) {
+        if (!this._schema.$ref) {
             return {
-                origin: this.origin,
+                origin: this._origin,
                 type: 'inline',
-                schema: this.schema as ResolvedSchema,
-                path: this.path,
+                schema: this._schema as ResolvedSchema,
+                path: this._path,
                 resolved: true
             }
         }
 
-        const schemaFromRef = specStore.resolveRef(this.schema.$ref)
+        const schemaFromRef = specStore.resolveRef(this._schema.$ref)
         if (!schemaFromRef) {
             return {
-                origin: this.origin,
+                origin: this._origin,
                 type: 'unresolved',
-                schema: this.schema,
-                path: this.path,
+                schema: this._schema,
+                path: this._path,
                 resolved: false
             }
         }
 
         if (depth <= 0) {
             return {
-                origin: this.origin,
+                origin: this._origin,
                 type: 'maxDepth',
-                schema: this.schema,
-                path: this.path,
+                schema: this._schema,
+                path: this._path,
                 resolved: false
             }
         }
 
         // TODO: cycle detection instead of depht - 1
-        const resolved = Resolver.resolve(schemaFromRef, depth - 1);
+        const resolved = Resolver.resolve(schemaFromRef, this._forwardRefResolutionDepth - 1);
         if (resolved.type === 'inline') {
             return {
                 type: 'resolved',
                 resolved: true,
-                origin: this.origin,
+                origin: this._origin,
                 schema: resolved.schema,
-                path: [...this.path, ...resolved.path]
+                path: [...this._path, ...resolved.path]
             }
         } else {
-            this.path.push(resolved.schema)
+            this._path.push(resolved.schema)
             return {
                 ...resolved,
-                origin: this.origin,
-                path: [...this.path, ...resolved.path]
+                origin: this._origin,
+                path: [...this._path, ...resolved.path]
             }
         }
     }

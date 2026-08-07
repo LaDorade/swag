@@ -33,28 +33,49 @@
 
     let resolvedSchema = $derived(specStore.resolveSchema(s, resolutionDepth))
 
+
+    let shouldResolveInnerSchema = $derived.by(() => {
+        if (resolvedSchema?.type === 'resolved'){
+            if (resolutionDepth <= 1) {
+                return settings.alwaysResolveArray;
+            }
+        } else if (resolvedSchema?.type === 'inline'){
+            if (resolutionDepth <= 0) {
+                return settings.alwaysResolveArray;
+            }
+        }
+        return resolvedSchema.resolved;
+    })
+    // If we resolved an array, we want to resolve its inner type too
+    // Special case when the array is declared inline but the inner type is a $ref
+    let resolvedArrayInnerSchema = $derived(
+        resolvedSchema.schema.items
+        ? specStore.resolveSchema(resolvedSchema.schema.items,
+            shouldResolveInnerSchema ? 1 : 0)
+        : null
+    )
     // Inline ARE in the schema, so we dont count them
     // except for inline array with resolved inner schema
     //  because the inner "array" element (in the spec) is not shown in the UI
     //  (not like Swagger where there is a "Items" line)
-    let newDepth   = $derived(
-        resolvedSchema.type === 'inline'
-        ? resolutionDepth
-        : resolutionDepth - 1)
-    // If we resolved an array, we want to resolve its inner type too
-    // Special case when the array is declared inline but the inner type is a $ref
-    let innerSchemaDepth = $derived.by(() => {
-        if (settings.alwaysResolveArray && resolvedSchema.type === 'inline') {
-            return newDepth + 1;
-        } else {
-            return newDepth;
+    let newDepth = $derived.by(() => {
+        let depth = resolutionDepth - 1;
+        if (resolvedSchema.type === 'inline'
+        ) {
+            depth += 1;
         }
+        return Math.max(depth, 0);
     })
-    let resolvedArrayInnerSchema = $derived(
-        resolvedSchema.schema.items
-        ? specStore.resolveSchema(resolvedSchema.schema.items, innerSchemaDepth)
-        : null
-    )
+    let newDepthInnerArray = $derived.by(() => {
+        let depth = newDepth - 1;
+        if (resolvedSchema.type === 'inline'
+            && resolvedArrayInnerSchema?.type === 'inline') {
+            depth += 1;
+        } else if (settings.alwaysResolveArray) {
+            depth += 1;
+        }
+        return Math.max(depth, 0);
+    })
 
     // Foldable only if inner properties
     // Not based on type because of degenerate values like
@@ -91,12 +112,15 @@
             {#if schemaType}
                 <span class="text-sm italic font-mono text-blue-700">
                     {schemaType}{#if resolvedArrayInnerSchema}
-                        {console.log(resolvedArrayInnerSchema, innerSchemaDepth)}
                         ({#if resolvedArrayInnerSchema.origin.$ref}
                             <span class="text-xs italic text-gray-500">
-                                -&rsaquo; {@render ref(resolvedArrayInnerSchema.origin.$ref)}</span>
+                                -&rsaquo; {@render ref(resolvedArrayInnerSchema.origin.$ref)}
+                            </span>{#if resolvedArrayInnerSchema.schema.type}
+                                {' ' + resolvedArrayInnerSchema.schema.type})
+                            {:else}){/if}
+                        {:else}
+                            {resolvedArrayInnerSchema.schema.type})
                         {/if}
-                        {resolvedArrayInnerSchema.schema.type})
                     {/if}
                 </span>
             {/if}
@@ -117,7 +141,9 @@
             <span class="text-gray-800">
                 {open ? '▲' : '▼'}</span>
         {/if}
-        {resolutionDepth}, {newDepth}
+        <span class="text-sm">
+            {name ?? ''}, {resolvedSchema.type}({resolvedArrayInnerSchema?.type}), {resolutionDepth}, {newDepth}
+        </span>
 
     </div>
 {/snippet}
@@ -148,7 +174,7 @@
         {#if resolvedArrayInnerSchema?.resolved}
             <Schema open
                 schema={resolvedArrayInnerSchema.schema}
-                resolutionDepth={innerSchemaDepth - 1}
+                resolutionDepth={newDepthInnerArray}
                 parentName="{fullName}[i]"
                 />
         {/if}
