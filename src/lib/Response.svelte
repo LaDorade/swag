@@ -10,32 +10,24 @@
         },
         open?: boolean;
     }
+
     let {
         response,
         open = $bindable(false)
     }: Props = $props()
+
+    let foldable = $derived(
+        Boolean(response.summary || response.content)
+    )
 </script>
 
-<details bind:open class="not-last:border-b border-gray-300 pb-2 pt-2">
-    <summary class="flex items-center gap-2 font-mono">
-        <span
-            class="h-fit px-2 py-1 text-sm rounded-lg bg-green-100"
-        >{response.code}</span>
-        {#if response.summary}
-            <span>{response.summary}</span>
-        {:else if response.description}
-            <span>{response.description}</span>
-        {/if}
-        {#if open}
-            A
-        {:else}
-            V
-        {/if}
+<details bind:open class="border-gray-300">
+    <summary class="leading-6 text-left w-full flex items-baseline gap-2 rounded overflow-hidden">
+        <span class="font-bold">{response.code}</span>
+        <i class="px-0.5 text-xs text-gray-600 italic truncate">{response.description}</i>
+        {#if foldable}<span class="text-gray-600">{open ? '▲' : '▼'}</span>{/if}
     </summary>
-    {#if response.description}
-        <span>{response.description}</span>
-    {/if}
-    {#if response.content}
+    {#if foldable}
         {JSON.stringify(response.content, null, 2)}
     {/if}
 </details>

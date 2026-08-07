@@ -29,7 +29,8 @@
     }));
 </script>
 
-{#snippet paramList(params: Props['parameters'])}
+{#snippet paramList(title: string, params: Props['parameters'])}
+    <span class="font-bold">{title}</span>
     <ul class="flex flex-col gap-2 list-disc list-inside pl-2">
         {#each params as param (param)}
             <Schema name={param.name} schema={param.schema}
@@ -38,14 +39,11 @@
     </ul>
 {/snippet}
 
-<details open class="p-1 flex flex-col gap-2 border rounded border-gray-200">
-    <summary class="text-lg">Parameters</summary>
+<div class="flex flex-col leading-6">
     {#if pathParams.length}
-        <span class="">Path Params</span>
-        {@render paramList(pathParams)}
+        {@render paramList('Path Params', pathParams)}
     {/if}
     {#if queryParams.length}
-        <span class="">Query Params</span>
-        {@render paramList(queryParams)}
+        {@render paramList('Query Params', queryParams)}
     {/if}
-</details>
+</div>
