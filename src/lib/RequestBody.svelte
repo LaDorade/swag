@@ -1,6 +1,9 @@
 <script lang="ts">
+    import type { ReferenceObject, RequestBodyObject } from "#types/oas.js";
+
+
     interface Props {
-      requestBody: object
+      requestBody?: RequestBodyObject | ReferenceObject;
       open?: boolean;
     }
 

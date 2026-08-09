@@ -1,4 +1,5 @@
-import type { UnresolvedSchema } from "#types";
+import type { Schema, UnresolvedSchema } from "#types";
+import type { OpenAPIObject, ParameterObject, ReferenceObject, RequestBodyObject, ResponseObject } from "#types/oas.js";
 
 export function getOperationAnchor(method: string, path: string): string{
     const uri = encodeURIComponent(`operation:${method}-${path}`);

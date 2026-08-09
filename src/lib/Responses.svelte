@@ -1,24 +1,20 @@
 <script lang="ts">
-    import Response from "./Response.svelte";
+    import ResponseComp from "./Response.svelte";
+    import type { ResponsesObject } from "#types/oas.js";
 
     interface Props {
-        responses: Record<string, {
-            content: object;
-            description: string;
-            summary?: string;
-        }>
+        responses: ResponsesObject
     }
 
     let {
-        responses: opResponses
+        responses
     }: Props = $props()
 
-    let responses = $derived(Object.entries(opResponses ?? {}))
 </script>
 
 <div class="flex flex-col gap-2">
-    {#each responses as [code, response], i (code)}
-        <Response open={i === 0} response={{
+    {#each Object.entries(responses) as [code, response], i (code)}
+        <ResponseComp open={i === 0} response={{
             ...response,
             code
         }} />

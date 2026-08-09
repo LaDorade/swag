@@ -1,12 +1,10 @@
 <script lang="ts">
+    import type { ResponseObject } from "#types/oas.js";
+
+
     interface Props {
-        response: {
+        response: ResponseObject & {
             code: string;
-            summary?: string;
-            description?: string;
-            headers?: Record<string, unknown>;
-            content?: Record<string, unknown>;
-            links?: Record<string, unknown>;
         },
         open?: boolean;
     }

@@ -1,5 +1,18 @@
-import type { ResolvedSchema, UnresolvedSchema } from "#types"
 import { settings } from "./Settings.svelte";
+
+import type { ResolvedSchema, Schema, UnresolvedSchema } from "#types"
+import type {
+    OpenAPIObject,
+    ParameterObject,
+    ReferenceObject,
+    RequestBodyObject,
+    ResponseObject
+} from "#types/oas.js"
+
+type ReferencableTypes =
+    | ParameterObject
+    | ResponseObject
+    | RequestBodyObject;
 
 
 type ResolutionResult =
@@ -44,7 +57,7 @@ class Resolver {
             }
         }
 
-        const schemaFromRef = specStore.resolveRef(this._schema.$ref)
+        const schemaFromRef = specStore.resolve<Schema | ReferenceObject>({$ref: this._schema.$ref})
         if (!schemaFromRef) {
             return {
                 origin: this._origin,
@@ -87,28 +100,19 @@ class Resolver {
 }
 
 class Spec {
-    spec: object = {}
+    spec?: OpenAPIObject;
 
     // https://spec.openapis.org/oas/v3.2.0.html#appendix-f-examples-of-base-uri-determination-and-reference-resolution
-    resolveRef = (
-        uri: string
-    ): UnresolvedSchema | null => {
-        if (!uri.startsWith("#/")) {
-            return null;
-        }
+    resolve<T extends ReferencableTypes>(ref: ReferenceObject): T | ReferenceObject | null {
+        const uri = ref.$ref;
+        if (!uri.startsWith("#/")) return null;
+        if (!this.spec) return null;
 
-        // Ex:
-        // #/components/schemas/Animal
-        // #/Snoup
-        // #/a/b
-
-        let cur = this.spec;
-        const segments = uri.slice(2).split('/')
-        for (let i = 0; i < segments.length; i++) {
-            cur = cur?.[segments[i]]
-        }
-        if (!cur) {
-            return null
+        const path = uri.slice(2).split('/');
+        let cur: any = this.spec;
+        for (const seg of path) {
+            cur = cur?.[seg];
+            if (!cur) return null;
         }
         return cur;
     }
