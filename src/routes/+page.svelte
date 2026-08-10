@@ -1,7 +1,8 @@
 <script lang="ts">
-    import { getOperationAnchor, getSchemaAnchor} from "#lib";
+    import { getSchemaAnchor} from "#lib";
     import Operation from "#lib/Operation.svelte";
     import Schema from "#lib/Schema/Schema.svelte";
+    import Sidebar from "#lib/Sidebar.svelte";
     import { settings } from "#lib/stores/Settings.svelte.js";
     import { specStore } from "#lib/stores/Spec.svelte.js";
     import spec from "./spec.json"
@@ -13,33 +14,7 @@
 </script>
 
 <div class="h-screen w-full flex">
-    <div class="w-fit m-2 mr-0">
-        <nav class="shrink-0 w-58 h-full p-2 rounded border border-gray-100 shadow-xs">
-            <h1>Swag</h1>
-            <h2 class="pt-2 border-b">
-                <a href="#schemas">Schemas</a>
-            </h2>
-            {#each Object.keys(schemas) as schema (schema)}
-                {@const anchor = getSchemaAnchor(`#/components/schemas/${schema}`)}
-                <a class="truncate block" href="#{anchor}">
-                    <span>{schema}</span>
-                </a>
-            {/each}
-            <h2 class="pt-2 border-b">
-                <a href="#paths">Paths</a>
-            </h2>
-            {#each Object.entries(paths) as [path, methodData] (path)}
-                {#each Object.entries(methodData) as [method, {summary}] (method)}
-                    {@const anchor = getOperationAnchor(method, path)}
-                    <a class="truncate block" href="#{anchor}">
-                        <span>[{method}]</span>
-                        <span>{path}</span>
-                        <span class="text-sm text-gray-600 italic">{summary}</span>
-                    </a>
-                {/each}
-            {/each}
-        </nav>
-    </div>
+    <Sidebar />
     <main class="flex flex-col gap-4 w-full p-4 overflow-auto">
         <details open class="flex flex-col open:gap-2">
             <summary class="flex items-center list-none text-lg
@@ -84,6 +59,11 @@
                         <input class="inline"
                             type="checkbox" bind:checked={settings.display.showItemsLineOnArray}>
                     </label>
+                    <label class="flex items-center gap-2">
+                        Afficher les références résolues
+                        <input class="inline"
+                            type="checkbox" bind:checked={settings.display.showResolvedReferences}>
+                    </label>
                 </div>
             </div>
         </details>
@@ -102,9 +82,9 @@
                 {#each Object.entries(paths) as [path, methodData] (path)}
                     {#each Object.entries(methodData) as [method, data] (method)}
                         <Operation operation={{
-                        method,
-                        path,
-                        operationData: data
+                            method,
+                            path,
+                            operationData: data
                         }} />
                     {/each}
                 {/each}
@@ -129,10 +109,9 @@
                         target:animate-hightlight"
                     >
                         <Schema
-                            {name}
+                            schemaName={name}
                             schema={schema as any}
                             resolutionDepth={settings.resolution.schemaMaxResolutionDepth}
-                            open
                         />
                     </div>
                 {/each}

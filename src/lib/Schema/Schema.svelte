@@ -8,21 +8,27 @@
     interface Props {
         root?: boolean;
         open?: boolean;
-        name?: string;
+        schemaName?: string | null;
         schema: UnresolvedSchema;
         resolutionDepth?: number;
-        parentName?: string;
+        parentName?: string | null;
     }
 
     let {
         root = true,
-        name,
+        schemaName,
         schema: s,
         open = $bindable(false),
         resolutionDepth = 0,
         parentName
     }: Props = $props();
 
+    let resolvedSchema = $derived(specStore.resolveSchema(s, resolutionDepth))
+
+    // Two cases where schema doesnt have name
+    // 1. Schema in array
+    // 2. Schema declared inline in requestBodies or responses
+    let name = $derived(schemaName || resolvedSchema.name || null)
     let fullName = $derived.by(() => {
         if (!parentName) {
             return name;
@@ -32,8 +38,12 @@
         }
         return `${parentName}.${name}`
     })
-
-    let resolvedSchema = $derived(specStore.resolveSchema(s, resolutionDepth))
+    let renderHead = $derived.by(() => {
+        if (root || name) {
+            return true;
+        }
+        return settings.display.showItemsLineOnArray;
+    })
 
 
     let shouldResolveInnerSchema = $derived.by(() => {
@@ -88,14 +98,6 @@
                     && resolvedArrayInnerSchema.schema.properties)))
     )
 
-    // Dont render head (infos) objects with no name (likely only referenced in array)
-    let renderHead = $derived.by(() => {
-        if (root || name || resolvedSchema.name) {
-            return true;
-        }
-        return settings.display.showItemsLineOnArray;
-    })
-
     let properties = $derived(Object.entries(resolvedSchema.schema.properties ?? {}))
 
     function getColorFromResolutionType(type: 'resolved' | 'inline' | 'unresolved' | 'maxDepth'): string {
@@ -132,15 +134,19 @@
         {#if resolvedArrayInnerSchema && root}
             <span class="inline-block text-xs text-gray-600">({@render type(resolvedArrayInnerSchema, false)})</span>
         {/if}
-        {@render ref(schema.origin.$ref, schema.resolutionType)}
+        {#if schema.resolutionType !== 'resolved'
+            || settings.display.showResolvedReferences}
+            {@render ref(schema.origin.$ref, schema.resolutionType)}
+        {/if}
     </span>
 {/snippet}
 
 {#snippet head()}
     <div class="w-full h-full">
-        {#if name || resolvedSchema.name}
-            <span class="font-mono">{name ?? resolvedSchema.name}</span>
+        {#if name}
+            <span class="font-mono">{name}</span>
         {:else}
+            <!-- FIXME: Not always an array in this case -->
             <span class="font-mono text-sm text-gray-600">Items:</span>
         {/if}
         {@render type(resolvedSchema)}
@@ -184,7 +190,7 @@
                 schema={resolvedArrayInnerSchema.schema}
                 resolutionDepth={newDepthInnerArray}
                 parentName="{fullName}[i]"
-                />
+            />
         {/if}
         <!--// Not based on type because of degenerate values like
             // type: 'string'
@@ -194,8 +200,10 @@
             {#each properties as [key, prop] (key)}
                 <Schema open root={false}
                     parentName={fullName}
-                    name={key} schema={prop}
-                    resolutionDepth={newDepth} />
+                    schemaName={key}
+                    schema={prop}
+                    resolutionDepth={newDepth}
+                />
             {/each}
         {/if}
     </div>

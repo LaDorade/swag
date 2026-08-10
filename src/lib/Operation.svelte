@@ -18,7 +18,7 @@
 
     let {
         operation,
-        open = $bindable(true)
+        open = $bindable(false)
     }: Props = $props()
 
     let {

@@ -934,6 +934,7 @@
             "type": "number"
           },
           "array": {
+            "description": "Un array de string ???",
             "items": {
               "type": "string"
             }
@@ -950,7 +951,8 @@
         "$ref": "#/components/schemas/h"
       },
       "h": {
-        "type": "string"
+        "type": "string",
+        "description": "bijour je suis un string"
       },
       "Pet": {
         "type": "object",

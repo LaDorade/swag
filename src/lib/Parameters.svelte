@@ -36,7 +36,7 @@
     <ul class="flex flex-col gap-0 list-disc list-inside pl-2">
         {#each params as param (param)}
             <Schema
-                name={param.name}
+                schemaName={param.name}
                 schema={param.schema}
                 resolutionDepth={3}
             />

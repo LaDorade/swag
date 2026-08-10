@@ -24,11 +24,15 @@ class Settings {
          * Afficher les lignes d'items dans les arrays
          * Ajoute une ligne "Items:" qui wrap les items de l'array
          */
-        showItemsLineOnArray: false,
+        showItemsLineOnArray: true,
         /**
          * Afficher les chemins des propriétés dans les schémas
          */
-        showPropertiesPaths: true,
+        showPropertiesPaths: false,
+        /**
+         * Afficher les références
+         */
+        showResolvedReferences: true
     })
 }
 
