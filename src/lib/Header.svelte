@@ -30,8 +30,13 @@
                 schemaName={name}
                 schema={headerResolved.schema}
             />
+        {:else if headerResolved.content}
+            <span class="text-red-500">Not supported "Content" in headers</span>
+        {:else}
+            <span class="italic text-gray-500">Nothing here...</span>
         {/if}
         <span class="pl-2 text-sm text-gray-600">
-            {headerResolved.description}</span>
+            {headerResolved.description}
+        </span>
     </div>
 {/if}

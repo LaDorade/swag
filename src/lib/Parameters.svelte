@@ -35,11 +35,17 @@
     <span class="font-bold">{title}</span>
     <ul class="flex flex-col gap-0 list-disc list-inside pl-2">
         {#each params as param (param)}
-            <Schema
-                schemaName={param.name}
-                schema={param.schema}
-                resolutionDepth={3}
-            />
+            {#if param.schema}
+                <Schema
+                    schemaName={param.name}
+                    schema={param.schema}
+                    resolutionDepth={3}
+                />
+            {:else if param.content}
+                <span class="text-red-500">Not supported "Content" in parameters</span>
+            {:else}
+                <span class="italic text-gray-500">Nothing here...</span>
+            {/if}
         {/each}
     </ul>
 {/snippet}
