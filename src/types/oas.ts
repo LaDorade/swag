@@ -98,16 +98,16 @@ export interface ParameterObject {
 export interface RequestBodyObject {
     description?: string;
     content: Record<string, MediaTypeObject | ReferenceObject>;
-    required?: string;
+    required?: boolean;
 }
 
 export type ResponsesObject = Record<string, ResponseObject | ReferenceObject>;
 export interface ResponseObject {
     summary?: string;
     description?: string;
-    headers?: Record<string, HeaderObject>;
-    content?: Record<string, MediaTypeObject>;
-    links?: Record<string, LinkObject>;
+    headers?: Record<string, HeaderObject | ReferenceObject>;
+    content?: Record<string, MediaTypeObject | ReferenceObject>;
+    links?: Record<string, LinkObject | ReferenceObject>;
 };
 
 export interface MediaTypeObject {
@@ -126,6 +126,14 @@ export interface HeaderObject {
     deprecated?: boolean;
     example?: any;
     examples: Record<string, ExampleObject>;
+
+    // Only for schema
+    style?: string;
+    explode?: boolean;
+    schema?: Schema;
+
+    // Only for content
+    content?: Record<string, MediaTypeObject | ReferenceObject>;
 };
 
 export interface ReferenceObject {
@@ -186,7 +194,7 @@ export type CallbackObject = Record<string, PathItemObject>;
 export type SecurityRequirementObject = Record<string, string[]>;
 export interface EncodingObject {
     contentType?: string;
-    headers?: Record<string, HeaderObject>;
+    headers?: Record<string, HeaderObject | ReferenceObject>;
     encoding?: Record<string, EncodingObject>;
     prefixEncoding?: EncodingObject[];
     itemEncoding?: EncodingObject;

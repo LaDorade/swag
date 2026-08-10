@@ -1,6 +1,7 @@
 <script lang="ts">
     import { specStore } from "./stores/Spec.svelte";
     import MediaType from "./MediaType.svelte";
+    import Headers from "./Headers.svelte";
     import type { ReferenceObject, ResponseObject } from "#types/oas.js";
 
     interface Props {
@@ -32,7 +33,9 @@
     });
 
     let foldable = $derived(
-        Boolean(responseResolved?.summary || responseResolved?.content)
+        Boolean(responseResolved?.summary
+            || responseResolved?.content
+            || responseResolved?.headers)
     )
 </script>
 
@@ -56,12 +59,14 @@
     {#if foldable}
         {#if responseResolved?.content && activeMediaType}
             {@const mediaTypeResolved = responseResolved.content[activeMediaType]}
-            <div class="flex flex-col">
-                <MediaType
-                    mediaType={mediaTypeResolved}
-                    {open}
-                />
-            </div>
+            <MediaType
+                title={activeMediaType}
+                mediaType={mediaTypeResolved}
+                {open}
+            />
+        {/if}
+        {#if responseResolved?.headers}
+            <Headers headers={responseResolved.headers} />
         {/if}
     {/if}
 </details>

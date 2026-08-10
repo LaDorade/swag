@@ -28,7 +28,7 @@
     // Two cases where schema doesnt have name
     // 1. Schema in array
     // 2. Schema declared inline in requestBodies or responses
-    let name = $derived(schemaName || resolvedSchema.name || null)
+    let name = $derived(schemaName ?? resolvedSchema.name ?? null)
     let fullName = $derived.by(() => {
         if (!parentName) {
             return name;
@@ -145,7 +145,7 @@
     <div class="w-full h-full">
         {#if name}
             <span class="font-mono">{name}</span>
-        {:else}
+        {:else if resolvedSchema.schema.items}
             <!-- FIXME: Not always an array in this case -->
             <span class="font-mono text-sm text-gray-600">Items:</span>
         {/if}

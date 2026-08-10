@@ -31,13 +31,13 @@
                     <span class="font-bold text-base">Resolution des $ref</span>
                     <label class="flex items-center gap-2">
                         Profondeur max:
-                        <input class="w-fit appearance-none"
+                        <input class="w-10 appearance-none"
                             min="0"
                             type="number" bind:value={settings.resolution.schemaMaxResolutionDepth}>
                     </label>
                     <label class="flex items-center gap-2">
                         Profondeur max (références directes)
-                        <input class="w-fit appearance-none"
+                        <input class="w-10 appearance-none"
                             min="0"
                             type="number" bind:value={settings.resolution.forwardReferenceMaxDepth}>
                     </label>

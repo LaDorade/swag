@@ -28,6 +28,7 @@
         if (!requestBodyResolved?.content) return null;
         return Object.entries(requestBodyResolved.content)[0][0];
     });
+
 </script>
 
 <div class="flex flex-col leading-6">

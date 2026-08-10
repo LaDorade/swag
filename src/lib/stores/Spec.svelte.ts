@@ -2,6 +2,7 @@ import { settings } from "./Settings.svelte";
 
 import type { ResolvedSchema, Schema, UnresolvedSchema } from "#types"
 import type {
+    HeaderObject,
     MediaTypeObject,
     OpenAPIObject,
     ParameterObject,
@@ -14,7 +15,8 @@ type ReferencableTypes =
     | ParameterObject
     | ResponseObject
     | RequestBodyObject
-    | MediaTypeObject;
+    | MediaTypeObject
+    | HeaderObject;
 
 
 export type ResolutionResult =
@@ -62,7 +64,6 @@ class Resolver {
 
         const schemaFromRef = specStore.resolve<Schema | ReferenceObject>({$ref: this._schema.$ref})
         if (!schemaFromRef.resolved) {
-            console.log('schemaFromRef', schemaFromRef)
             return {
                 origin: this._origin,
                 resolutionType: 'unresolved',
