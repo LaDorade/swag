@@ -16,8 +16,8 @@
         if ('$ref' in param) {
             const res = specStore.resolve<ParameterObject>(param);
             // FIXME: handle multiples ref
-            if (!res || '$ref' in res) return acc;
-            param = res;
+            if (!res.resolved || '$ref' in res.resolved) return acc;
+            param = res.resolved;
         }
         if (param.in === 'path') {
             acc.pathParams.push(param)
@@ -33,7 +33,7 @@
 
 {#snippet paramList(title: string, params: ParameterObject[])}
     <span class="font-bold">{title}</span>
-    <ul class="flex flex-col gap-2 list-disc list-inside pl-2">
+    <ul class="flex flex-col gap-0 list-disc list-inside pl-2">
         {#each params as param (param)}
             <Schema
                 name={param.name}

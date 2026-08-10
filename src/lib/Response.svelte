@@ -1,9 +1,10 @@
 <script lang="ts">
-    import type { ResponseObject } from "#types/oas.js";
-
+    import { specStore } from "./stores/Spec.svelte";
+    import MediaType from "./MediaType.svelte";
+    import type { ReferenceObject, ResponseObject } from "#types/oas.js";
 
     interface Props {
-        response: ResponseObject & {
+        response: ( ResponseObject | ReferenceObject)& {
             code: string;
         },
         open?: boolean;
@@ -14,8 +15,24 @@
         open = $bindable(false)
     }: Props = $props()
 
+    let responseResolved = $derived.by(() => {
+        // TODO: make this generic between all referencable objects
+        if ('$ref' in response) {
+            const res = specStore.resolve<ResponseObject>(response);
+            // FIXME: handle multiples ref
+            if (!res.resolved || '$ref' in res.resolved) return null;
+            return res.resolved;
+        }
+        return response;
+    });
+
+    let activeMediaType = $derived.by(() => {
+        if (!responseResolved?.content) return null;
+        return Object.entries(responseResolved.content)[0][0];
+    });
+
     let foldable = $derived(
-        Boolean(response.summary || response.content)
+        Boolean(responseResolved?.summary || responseResolved?.content)
     )
 </script>
 
@@ -23,9 +40,28 @@
     <summary class="leading-6 text-left w-full flex items-baseline gap-2 rounded overflow-hidden">
         <span class="font-bold">{response.code}</span>
         <i class="px-0.5 text-xs text-gray-600 italic truncate">{response.description}</i>
-        {#if foldable}<span class="text-gray-600">{open ? '▲' : '▼'}</span>{/if}
+        {#if responseResolved?.content}
+            <select
+                class="ml-auto px-2 py-1 leading-6 italic border border-gray-300 rounded"
+                bind:value={activeMediaType}
+                disabled={!foldable || Object.keys(responseResolved.content).length === 0}
+            >
+                {#each Object.entries(responseResolved.content) as [mediaType] (mediaType)}
+                    <option value={mediaType}>{mediaType}</option>
+                {/each}
+            </select>
+        {/if}
+        {#if foldable}<span class="px-2 text-gray-600">{open ? '▲' : '▼'}</span>{/if}
     </summary>
     {#if foldable}
-        {JSON.stringify(response.content, null, 2)}
+        {#if responseResolved?.content && activeMediaType}
+            {@const mediaTypeResolved = responseResolved.content[activeMediaType]}
+            <div class="flex flex-col">
+                <MediaType
+                    mediaType={mediaTypeResolved}
+                    {open}
+                />
+            </div>
+        {/if}
     {/if}
 </details>

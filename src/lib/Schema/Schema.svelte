@@ -1,11 +1,12 @@
 <script lang="ts">
     import Schema from "./Schema.svelte"
-    import { specStore } from "#lib/stores/Spec.svelte.js";
+    import { specStore, type ResolutionResult } from "#lib/stores/Spec.svelte.js";
     import { settings } from "#lib/stores/Settings.svelte.js";
-    import { deduceSchemaType, getSchemaAnchor } from "#lib";
+    import { getSchemaAnchor } from "#lib";
     import type { UnresolvedSchema } from "#types";
 
     interface Props {
+        root?: boolean;
         open?: boolean;
         name?: string;
         schema: UnresolvedSchema;
@@ -14,6 +15,7 @@
     }
 
     let {
+        root = true,
         name,
         schema: s,
         open = $bindable(false),
@@ -88,59 +90,65 @@
 
     // Dont render head (infos) objects with no name (likely only referenced in array)
     let renderHead = $derived.by(() => {
-        if (name) {
+        if (root || name || resolvedSchema.name) {
             return true;
         }
         return settings.display.showItemsLineOnArray;
     })
 
-    let schemaType = $derived(deduceSchemaType(resolvedSchema.schema))
     let properties = $derived(Object.entries(resolvedSchema.schema.properties ?? {}))
+
+    function getColorFromResolutionType(type: 'resolved' | 'inline' | 'unresolved' | 'maxDepth'): string {
+        switch (type) {
+            case 'resolved':
+            case 'inline':
+            case 'maxDepth': return 'text-gray-500'
+            case 'unresolved': return 'text-red-500';
+            default: return 'text-gray-400';
+        }
+    }
 </script>
 
-{#snippet ref (r: string)}
-    <a onclick={e => e.stopPropagation()} href="#{getSchemaAnchor(r)}"
-        class="hover:underline">{r}</a>
+{#snippet ref (r: string | undefined, resolutionType: 'resolved' | 'inline' | 'unresolved' | 'maxDepth')}
+    {@const color = getColorFromResolutionType(resolutionType)}
+    {#if resolutionType !== 'inline' && r}
+        <span class="inline-block text-xs italic {color}">
+            {#if resolutionType === 'unresolved'}
+                -&rsaquo; {r} (unresolved)
+            {:else}
+                <a
+                    onclick={e => e.stopPropagation()}
+                    href="#{getSchemaAnchor(r)}"
+                    class="hover:underline"
+                >-&rsaquo; {r} {resolutionType === 'maxDepth' ? '(max depth)' : ''}</a>
+            {/if}
+        </span>
+    {/if}
+{/snippet}
+
+{#snippet type(schema: ResolutionResult, root = true)}
+    <span class="inline-block">
+        <span class="text-sm italic font-mono text-blue-700">{schema.schema.type}</span>
+        {#if resolvedArrayInnerSchema && root}
+            <span class="inline-block text-xs text-gray-600">({@render type(resolvedArrayInnerSchema, false)})</span>
+        {/if}
+        {@render ref(schema.origin.$ref, schema.resolutionType)}
+    </span>
 {/snippet}
 
 {#snippet head()}
-    <div class="w-full h-full px-1 py-0.5">
-        {#if name}
-            <span class="font-mono">{name}</span>
+    <div class="w-full h-full">
+        {#if name || resolvedSchema.name}
+            <span class="font-mono">{name ?? resolvedSchema.name}</span>
         {:else}
             <span class="font-mono text-sm text-gray-600">Items:</span>
         {/if}
-        {#if resolvedSchema.resolved}
-            {#if resolvedSchema.resolutionType === 'resolved' && resolvedSchema.origin.$ref}
-                <span class="text-xs italic text-gray-500">-&rsaquo; {@render ref(resolvedSchema.origin.$ref)}</span>
-            {/if}
-            {#if schemaType}
-                <span class="text-sm italic font-mono text-blue-700">
-                    {schemaType}{#if resolvedArrayInnerSchema}
-                        ({#if resolvedArrayInnerSchema.origin.$ref}
-                            <span class="text-xs italic text-gray-500">
-                                -&rsaquo; {@render ref(resolvedArrayInnerSchema.origin.$ref)}
-                            </span>{#if resolvedArrayInnerSchema.schema.type}
-                                {' ' + resolvedArrayInnerSchema.schema.type})
-                            {:else}){/if}
-                        {:else}
-                            {resolvedArrayInnerSchema.schema.type})
-                        {/if}
-                    {/if}
-                </span>
-            {/if}
-            {#if resolvedSchema.schema.format}
-                <span class="text-xs font-mono text-gray-700">({resolvedSchema.schema.format})</span>
-            {/if}
-        {:else if resolvedSchema.resolutionType === 'maxDepth'}
-            <span class="text-xs italic text-gray-500">
-                -&rsaquo; {@render ref(resolvedSchema.origin.$ref)} (max depth)</span>
-        {:else if resolvedSchema.resolutionType === 'unresolved'}
-            <span class="text-xs italic text-red-800">
-                -&rsaquo; {resolvedSchema.schema.$ref} (unresolved)</span>
-        {/if}
+        {@render type(resolvedSchema)}
         {#if parentName && settings.display.showPropertiesPaths}
             <span class="pl-1 text-xs text-gray-400">{fullName}</span>
+        {/if}
+        {#if resolvedSchema.schema.description}
+            <span class="text-xs text-gray-600">{resolvedSchema.schema.description}</span>
         {/if}
         {#if foldable}
             <span class="text-gray-800">{open ? '▲' : '▼'}</span>
@@ -148,7 +156,7 @@
     </div>
 {/snippet}
 
-<div class="w-full font-mono">
+<div class="schema w-full font-mono">
     {#if renderHead}
         {#if foldable}
             <button
@@ -172,7 +180,7 @@
             // properties: {...}
             // items: {...} -->
         {#if resolvedArrayInnerSchema?.resolved}
-            <Schema open
+            <Schema open root={false}
                 schema={resolvedArrayInnerSchema.schema}
                 resolutionDepth={newDepthInnerArray}
                 parentName="{fullName}[i]"
@@ -184,7 +192,7 @@
             // items: {...} -->
         {#if properties.length}
             {#each properties as [key, prop] (key)}
-                <Schema open
+                <Schema open root={false}
                     parentName={fullName}
                     name={key} schema={prop}
                     resolutionDepth={newDepth} />
