@@ -41,11 +41,10 @@ class Spec {
             cur = cur?.[seg];
             if (!cur) {
                 // avoid @svelte:state_unsafe_mutation errors
-                // setTimeout(() => {
+                // FIXME: don't do that, dont use $derived with this
                 untrack(() => {
                     this.errors[uri] = `Reference not found: ${uri}`;
                 });
-                // }, 0);
                 return { resolved: null, name };
             }
         }
@@ -57,7 +56,10 @@ class Spec {
     ): T | null {
         if ("$ref" in obj) {
             const res = this.resolve<T>(obj);
-            if (!res.resolved || '$ref' in res.resolved) {
+            if (!res.resolved) return null;
+            // FIXME: handle multiples ref
+            if ('$ref' in res.resolved) {
+                // FIXME: don't do that, dont use $derived with this
                 untrack(() => {
                     this.errors[obj.$ref] = `Nested references not supported: ${obj.$ref}`;
                 });

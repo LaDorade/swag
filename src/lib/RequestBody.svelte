@@ -13,16 +13,7 @@
       open = $bindable(false)
     }: Props = $props()
 
-    let requestBodyResolved = $derived.by(() => {
-        // TODO: make this generic between all referencable objects
-        if ('$ref' in requestBody) {
-            const res = specStore.resolve<RequestBodyObject>(requestBody);
-            // FIXME: handle multiples ref
-            if (!res.resolved || '$ref' in res.resolved) return null;
-            return res.resolved;
-        }
-        return requestBody;
-    });
+    let requestBodyResolved = $derived(specStore.resolveObject<RequestBodyObject>(requestBody));
 
     let activeMediaType = $derived.by(() => {
         if (!requestBodyResolved?.content) return null;

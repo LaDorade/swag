@@ -12,17 +12,13 @@
     }: Props = $props()
 
     let {queryParams, pathParams} = $derived(parameters.reduce((acc, param) => {
-        // TODO: make this generic between all referencable objects
-        if ('$ref' in param) {
-            const res = specStore.resolve<ParameterObject>(param);
-            // FIXME: handle multiples ref
-            if (!res.resolved || '$ref' in res.resolved) return acc;
-            param = res.resolved;
-        }
-        if (param.in === 'path') {
-            acc.pathParams.push(param)
-        } else if (param.in === 'query') {
-            acc.queryParams.push(param)
+        const resolved = specStore.resolveObject<ParameterObject>(param);
+        if (resolved) {
+            if (resolved.in === 'path') {
+                acc.pathParams.push(resolved)
+            } else if (resolved.in === 'query') {
+                acc.queryParams.push(resolved)
+            }
         }
         return acc;
     }, {

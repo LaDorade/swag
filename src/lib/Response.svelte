@@ -16,16 +16,7 @@
         open = $bindable(false)
     }: Props = $props()
 
-    let responseResolved = $derived.by(() => {
-        // TODO: make this generic between all referencable objects
-        if ('$ref' in response) {
-            const res = specStore.resolve<ResponseObject>(response);
-            // FIXME: handle multiples ref
-            if (!res.resolved || '$ref' in res.resolved) return null;
-            return res.resolved;
-        }
-        return response;
-    });
+    let responseResolved = $derived(specStore.resolveObject<ResponseObject>(response));
 
     let activeMediaType = $derived.by(() => {
         if (!responseResolved?.content) return null;
@@ -54,7 +45,9 @@
                 {/each}
             </select>
         {/if}
-        {#if foldable}<span class="px-2 text-gray-600">{open ? '▲' : '▼'}</span>{/if}
+        {#if foldable}
+            <span class="px-2 text-gray-600">{open ? '▲' : '▼'}</span>
+        {/if}
     </summary>
     {#if foldable}
         {#if responseResolved?.content && activeMediaType}

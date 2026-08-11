@@ -16,16 +16,7 @@
         open,
     }: Props = $props();
 
-    let mediaTypeResolved = $derived.by(() => {
-        // TODO: make this generic between all referencable objects
-        if ('$ref' in mediaType) {
-            const res = specStore.resolve<MediaTypeObject>(mediaType);
-            // FIXME: handle multiples ref
-            if (!res.resolved || '$ref' in res.resolved) return null;
-            return res.resolved;
-        }
-        return mediaType;
-    })
+    let mediaTypeResolved = $derived(specStore.resolveObject<MediaTypeObject>(mediaType));
 </script>
 
 <div class="flex flex-col gap-2 p-2 leading-6">

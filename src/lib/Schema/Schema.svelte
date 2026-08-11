@@ -1,8 +1,9 @@
 <script lang="ts">
     import Schema from "./Schema.svelte"
-    import { specStore, type ResolutionResult } from "#lib/stores/Spec.svelte.js";
+    import { specStore } from "#lib/stores/Spec.svelte.js";
     import { settings } from "#lib/stores/Settings.svelte.js";
     import { getSchemaAnchor } from "#lib";
+    import type { ResolutionResult } from "#lib/stores/Resovler.svelte.js";
     import type { UnresolvedSchema } from "#types";
 
     interface Props {
@@ -30,18 +31,13 @@
     // 2. Schema declared inline in requestBodies or responses
     let name = $derived(schemaName ?? resolvedSchema.name ?? null)
     let fullName = $derived.by(() => {
-        if (!parentName) {
-            return name;
-        }
-        if (!name) {
-            return parentName;
-        }
+        if (!parentName) return name;
+        if (!name) return parentName;
+
         return `${parentName}.${name}`
     })
     let renderHead = $derived.by(() => {
-        if (root || name) {
-            return true;
-        }
+        if (root || name) return true
         return settings.display.showItemsLineOnArray;
     })
 
