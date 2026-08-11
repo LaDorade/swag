@@ -1,7 +1,7 @@
 <script lang="ts">
     import { specStore } from "./stores/Spec.svelte";
-    import type { HeaderObject, ReferenceObject } from "#types/oas.js";
     import Schema from "./Schema/Schema.svelte";
+    import type { HeaderObject, ReferenceObject } from "#types/oas.js";
 
     interface Props {
         header: HeaderObject | ReferenceObject;
@@ -12,14 +12,7 @@
         name,
     }: Props = $props();
 
-    let headerResolved = $derived.by(() => {
-        if ("$ref" in header) {
-            const res = specStore.resolve<HeaderObject>(header);
-            if (!res.resolved || '$ref' in res.resolved) return null;
-            return res.resolved;
-        }
-        return header;
-    });
+    let headerResolved = $derived(specStore.resolveObject<HeaderObject>(header));
 </script>
 
 {#if headerResolved}

@@ -21,6 +21,20 @@
                 bg-gray-50
                 border border-gray-200 rounded p-2">
                 <h2 class="text-xl">
+                    Errors
+                </h2>
+            </summary>
+            <div class="flex flex-col gap-2 border-l border-gray-200 p-2">
+                {#each Object.values(specStore.errors) as error (error)}
+                    <span class="text-red-500 text-sm">{error}</span>
+                {/each}
+            </div>
+        </details>
+        <details open class="flex flex-col open:gap-2">
+            <summary class="flex items-center list-none text-lg
+                bg-gray-50
+                border border-gray-200 rounded p-2">
+                <h2 class="text-xl">
                     Settings
                 </h2>
                 <span class="text-xs text-gray-600 ml-auto pr-2 block in-open:hidden">▼</span>
