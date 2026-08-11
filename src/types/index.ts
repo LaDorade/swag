@@ -2,7 +2,7 @@ export interface UnresolvedSchema {
     description?: string;
     type?: string;
     format?: string;
-    default?: string;
+    default?: any;
 
     const?: string;
     enum?: string[];
@@ -19,23 +19,16 @@ export interface UnresolvedSchema {
     examples?: Record<string, unknown>
 
     $ref?: string;
-
-    // TODO:
-    // https://spec.openapis.org/oas/v3.2.0.html#generic-data-structure-model
-    // $id, $defs, $dynamicDefs, $dynamicAnchor
-    // discriminator
-    // allOf
-    // anyOf
-    // oneOf
 }
 
 export type ResolvedSchema = UnresolvedSchema & {$ref?: never}
 
 export interface Schema {
+    $ref?: string;
     description?: string;
     type?: string;
     format?: string;
-    default?: string;
+    default?: any;
 
     const?: string;
     enum?: string[];
