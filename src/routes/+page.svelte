@@ -95,7 +95,7 @@
             <div class="flex flex-col gap-4 py-2 pl-2 border-l border-gray-200">
                 {#each Object.entries(paths) as [path, methodData] (path)}
                     {#each Object.entries(methodData) as [method, data] (method)}
-                        <Operation operation={{
+                        <Operation open operation={{
                             method,
                             path,
                             operationData: data

@@ -1,5 +1,4 @@
-import type { Schema, UnresolvedSchema } from "#types";
-import type { OpenAPIObject, ParameterObject, ReferenceObject, RequestBodyObject, ResponseObject } from "#types/oas.js";
+import type { UnresolvedSchema } from "#types";
 
 export function getOperationAnchor(method: string, path: string): string{
     const uri = encodeURIComponent(`operation:${method}-${path}`);
@@ -20,9 +19,26 @@ export function deduceSchemaType(s: UnresolvedSchema): string {
 }
 
 export function methodToColor(method: string): string {
-    if (method === 'get') return 'bg-blue-100/40'
-    if (method === 'post') return 'bg-green-100/40'
-    if (method === 'put') return 'bg-orange-100/40'
-    if (method === 'delete') return 'bg-red-100/40'
-    return 'bg-gray-100'
+    switch (method) {
+        case 'get': return 'bg-blue-100/40'
+        case 'post': return 'bg-green-100/40'
+        case 'put': return 'bg-orange-100/40'
+        case 'delete': return 'bg-red-100/40'
+        default: return 'bg-gray-100'
+    }
+}
+
+export function stringToTailwindColor(str: string): string {
+    const hash = str.split('')
+        .reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    switch (hash % 7) {
+        case 0: return 'bg-blue-100/60'
+        case 1: return 'bg-green-100/60'
+        case 2: return 'bg-orange-100/60'
+        case 3: return 'bg-red-100/60'
+        case 4: return 'bg-yellow-100/60'
+        case 5: return 'bg-purple-100/60'
+        case 6: return 'bg-pink-100/60'
+        default: return 'bg-gray-100'
+    }
 }

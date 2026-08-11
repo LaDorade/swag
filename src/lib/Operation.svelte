@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { getOperationAnchor, methodToColor } from "#lib";
+    import { getOperationAnchor, methodToColor, stringToTailwindColor } from "#lib";
     import Parameters from "./Parameters.svelte";
     import RequestBody from "./RequestBody.svelte";
     import Responses from "./Responses.svelte";
@@ -91,9 +91,15 @@
                     </button>
                 {/each}
                 {#if tags?.length}
-                    <span class="ml-auto p-2">
-                        {tags?.join(', ')}
-                    </span>
+                    <div class="flex items-baseline gap-2 px-2 ml-auto">
+                        {#each tags as tag (tag)}
+                            <span class="flex items-baseline bg-gray-100 px-2 py-1
+                                text-xs {stringToTailwindColor(tag)}
+                                rounded-xl border border-gray-200">
+                                {tag}
+                            </span>
+                        {/each}
+                    </div>
                 {/if}
             </div>
             {#if activeTab}
