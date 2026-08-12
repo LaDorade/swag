@@ -7,9 +7,11 @@ import type {
     MediaTypeObject,
     OpenAPIObject,
     ParameterObject,
+    PathItemObject,
     ReferenceObject,
     RequestBodyObject,
-    ResponseObject
+    ResponseObject,
+    ServerObject
 } from "#types/oas.js"
 
 type ReferencableTypes =
@@ -72,6 +74,33 @@ class Spec {
 
     resolveSchema (schema: UnresolvedSchema, depth: number): ResolutionResult {
         return Resolver.resolve(schema, depth)
+    }
+
+    getRootServers(): ServerObject[] {
+        return this.spec?.servers ?? [];
+    }
+
+    getPathServers(path: string): ServerObject[] {
+        const pathServers =  this.spec
+            ?.paths?.[path as keyof OpenAPIObject['paths']]
+            ?.servers;
+
+        if (!pathServers || !pathServers.length) {
+            return this.getRootServers();
+        }
+        return pathServers;
+    }
+
+    getOperationServers(path: string, method: string): ServerObject[] {
+        const operationServers = this.spec
+            ?.paths?.[path as keyof OpenAPIObject['paths']]
+            ?.[method as keyof PathItemObject]
+            ?.servers ?? [];
+
+        if (!operationServers || !operationServers.length) {
+            return this.getPathServers(path);
+        }
+        return operationServers;
     }
 }
 

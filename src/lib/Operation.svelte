@@ -3,16 +3,13 @@
     import Parameters from "./Parameters.svelte";
     import RequestBody from "./RequestBody.svelte";
     import Responses from "./Responses.svelte";
+    import TryItOut from "./TryItOut.svelte";
 
-    import type * as oas from "#types/oas.js";
+    import type { Operation } from "#types";
 
 
     interface Props {
-        operation: {
-            path: string,
-            method: string,
-            operationData: oas.OperationObject;
-        };
+        operation: Operation;
         open?: boolean;
     }
 
@@ -47,6 +44,8 @@
             t.push({ label: 'Request Body', comp: RequestBody, props: { requestBody } } as const)
         if (responses)
             t.push({ label: 'Responses', comp: Responses, props: { responses } } as const)
+
+        t.push({ label: 'Try It Out', comp: TryItOut, props: { operation } } as const)
         return t;
     })
     let activeTab = $derived(tabs[0]?.label ?? '')

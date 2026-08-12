@@ -16,9 +16,19 @@
   },
   "paths": {
     "/pet": {
+      "servers": [
+        {
+          "url": "https://canard.cc"
+        }
+      ],
       "post": {
         "tags": [
           "pet"
+        ],
+        "servers": [
+          {
+            "url": "https://bijour.com"
+          }
         ],
         "summary": "Add a new pet to the store",
         "description": "",

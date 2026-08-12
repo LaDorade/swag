@@ -1,3 +1,5 @@
+import { OperationObject } from "./oas";
+
 export interface UnresolvedSchema {
     description?: string;
     type?: string;
@@ -51,4 +53,11 @@ export interface Schema {
     // allOf
     // anyOf
     // oneOf
+}
+
+
+export interface Operation {
+    path: string,
+    method: string,
+    operationData: OperationObject;
 }

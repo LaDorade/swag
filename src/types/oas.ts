@@ -42,23 +42,25 @@ export type PathsObject = {
     [K in `/${string}`]: PathItemObject;
 }
 
-export interface PathItemObject {
+export type Methods =
+    | 'get'
+    | 'put'
+    | 'post'
+    | 'delete'
+    | 'options'
+    | 'head'
+    | 'patch'
+    | 'trace'
+    | 'query';
+
+export type PathItemObject = {
     $ref?: string // not a Reference Object: https://spec.openapis.org/oas/v3.2.0.html#fixed-fields-6
     summary?: string;
     description?: string;
-    get?: OperationObject;
-    put?: OperationObject;
-    post?: OperationObject;
-    delete?: OperationObject;
-    options?: OperationObject;
-    head?: OperationObject;
-    patch?: OperationObject;
-    trace?: OperationObject;
-    query?: OperationObject;
-    additionalOperations?: Record<string, OperationObject>;
     servers?: ServerObject[];
-    parameters?: ParameterObject[]
-}
+    parameters?: ParameterObject[];
+    additionalOperations?: Record<string, OperationObject>;
+} & {[K in Methods]?: OperationObject}
 
 export interface OperationObject {
     tags?: string[];
