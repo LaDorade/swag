@@ -83,7 +83,7 @@ export interface ParameterObject {
     deprecated?: boolean;
     allowEmptyValue?: boolean;
     example?: any;
-    examples?: Record<string, ExampleObject>;
+    examples?: Record<string, ExampleObject | ReferenceObject>;
 
     // Only set if content field is present
     content?: Record<string, MediaTypeObject | ReferenceObject>;
@@ -114,7 +114,7 @@ export interface MediaTypeObject {
     schema?: Schema;
     itemSchema?: Schema;
     example?: any;
-    examples?: Record<string, ExampleObject>;
+    examples?: Record<string, ExampleObject | ReferenceObject>;
     encoding?: Record<string, EncodingObject>;
     prefixEncoding?: EncodingObject[];
     itemEncoding?: EncodingObject;
@@ -125,7 +125,7 @@ export interface HeaderObject {
     required?: boolean;
     deprecated?: boolean;
     example?: any;
-    examples: Record<string, ExampleObject>;
+    examples?: Record<string, ExampleObject | ReferenceObject>;
 
     // Only for schema
     style?: string;

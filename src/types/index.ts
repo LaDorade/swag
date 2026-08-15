@@ -31,9 +31,24 @@ export interface UnresolvedSchema {
 
 export type ResolvedSchema = UnresolvedSchema & {$ref?: never}
 
+
+export const allowedTypes = [
+    'string', 'number', 'integer',
+    'boolean', 'object', 'array'
+] as const;
+
+export type AllowedTypes = typeof allowedTypes[number];
+
+export type DeductedType =
+    | AllowedTypes
+    | "allOf"
+    | "anyOf"
+    | "oneOf"
+    | "invalid"
+
 export interface Schema {
     description?: string;
-    type?: string;
+    type?: AllowedTypes | (string & {});
     format?: string;
     default?: string;
 

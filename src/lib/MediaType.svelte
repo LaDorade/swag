@@ -2,6 +2,7 @@
     import Schema from "./Schema/Schema.svelte";
     import { specStore } from "./stores/Spec.svelte";
     import { settings } from "./stores/Settings.svelte";
+    import Examples from "./Examples.svelte";
     import type { MediaTypeObject, ReferenceObject } from "#types/oas.js";
 
     interface Props {
@@ -30,6 +31,9 @@
             open={open}
         />
     {:else}
-        <span class="p-2 leading-6 text-gray-600">None</span>
+        <span class="italic text-gray-500">Nothing here...</span>
+    {/if}
+    {#if mediaTypeResolved?.examples}
+        <Examples examples={mediaTypeResolved.examples} />
     {/if}
 </div>

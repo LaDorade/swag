@@ -10,13 +10,24 @@
     const paths = spec.paths
     const schemas = spec.components.schemas
 
+    // FIXME: Should have proper types & should pe passed by parent
     specStore.spec = spec;
+
+    let sections = $state({
+        errors: false,
+        settings: false,
+        paths: false,
+        schemas: {
+            open: true,
+            innerOpen: true
+        }
+    })
 </script>
 
 <div class="h-screen w-full flex">
     <Sidebar />
     <main class="flex flex-col gap-4 w-full p-4 overflow-auto">
-        <details open class="flex flex-col open:gap-2">
+        <details bind:open={sections.errors} class="flex flex-col open:gap-2">
             <summary class="flex items-center list-none text-lg
                 bg-gray-50
                 border border-gray-200 rounded p-2">
@@ -30,7 +41,7 @@
                 {/each}
             </div>
         </details>
-        <details open class="flex flex-col open:gap-2">
+        <details bind:open={sections.settings} class="flex flex-col open:gap-2">
             <summary class="flex items-center list-none text-lg
                 bg-gray-50
                 border border-gray-200 rounded p-2">
@@ -81,7 +92,7 @@
                 </div>
             </div>
         </details>
-        <details open class="flex flex-col open:gap-2">
+        <details bind:open={sections.paths} class="flex flex-col open:gap-2">
             <summary class="flex items-center list-none text-lg
                 bg-gray-50
                 border border-gray-200 rounded p-2">
@@ -104,7 +115,7 @@
                 {/each}
             </div>
         </details>
-        <details class="flex flex-col open:gap-2">
+        <details bind:open={sections.schemas.open} class="flex flex-col open:gap-2">
             <summary class="flex items-center list-none text-lg
                 bg-gray-50
                 border border-gray-200 rounded p-2">
@@ -119,10 +130,11 @@
                 {#each Object.entries(schemas) as [name, schema] (name)}
                     {@const anchor = getSchemaAnchor(`#/components/schemas/${name}`)}
                     <div id={anchor}
-                        class="p-2 bg-gray-50 rounded border border-gray-200
+                        class="bg-gray-50 rounded border border-gray-200
                         target:animate-hightlight"
                     >
                         <Schema
+                            open={sections.schemas.innerOpen}
                             schemaName={name}
                             schema={schema as any}
                             resolutionDepth={settings.resolution.schemaMaxResolutionDepth}

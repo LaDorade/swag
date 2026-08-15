@@ -1,5 +1,6 @@
 <script lang="ts">
     import { getOperationAnchor, getSchemaAnchor } from "#lib";
+    import { resolve } from "$app/paths";
     import { specStore } from "./stores/Spec.svelte";
 
     const { spec } = specStore;
@@ -40,5 +41,5 @@
             </li>
         {/each}
     </ul>
-    <h1 class="mt-auto text-xl">Swag</h1>
+    <h1 class="mt-auto text-xl"><a href={resolve('/')}>Swag</a></h1>
 </nav>

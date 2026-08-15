@@ -113,13 +113,16 @@
                 },
                 "examples": {
                   "response": {
-                    "value": {
-                      "name": "Puma",
-                      "type": "Dog",
-                      "color": "Black",
-                      "gender": "Female",
-                      "breed": "Mixed"
-                    }
+                    "description": "Bijour",
+                    "value": [
+                      {
+                        "name": "Puma",
+                        "type": "Dog",
+                        "color": "Black",
+                        "gender": "Female",
+                        "breed": "Mixed"
+                      }
+                    ]
                   }
                 }
               },
@@ -871,6 +874,15 @@
               "$ref": "#/components/schemas/h"
             }
           },
+          "coinc?": {
+            "type": "string",
+            "description": "???",
+            "examples": {
+              "bij": "bij",
+              "hop": "coinc"
+            },
+            "default": "?º?"
+          },
           "hop": {
             "items": {
               "type": "object",
@@ -881,7 +893,7 @@
                 "bbb": {
                   "type": "array",
                   "items": {
-                    "$ref": ""
+                    "$ref": "d"
                   }
                 }
               }
@@ -977,6 +989,34 @@
           },
           "age": {
             "type": "integer"
+          },
+          "hair": {
+            "type": "object",
+            "properties": {
+              "color": {
+                "type": "string"
+              },
+              "size": {
+                "type": "integer"
+              }
+            }
+          },
+          "friends": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "age": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "gender": {
+            "type": "string"
           }
         }
       }
