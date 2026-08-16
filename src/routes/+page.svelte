@@ -36,7 +36,7 @@
                 </h2>
             </summary>
             <div class="flex flex-col gap-2 border-l border-gray-200 p-2">
-                {#each Object.values(specStore.errors) as error (error)}
+                {#each specStore.errors.values() as error, i (i)}
                     <span class="text-red-500 text-sm">{error}</span>
                 {/each}
             </div>

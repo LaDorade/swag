@@ -1,4 +1,4 @@
-import { allowedTypes, type DeductedType, type UnresolvedSchema } from "#types";
+import { allowedOpenAPITypes, type DeductedType, type UnresolvedSchema } from "#types";
 import type { ResolutionType } from "./stores/Resovler.svelte";
 
 export function getOperationAnchor(method: string, path: string): string{
@@ -13,7 +13,7 @@ export function getSchemaAnchor(name: string): string {
 
 export function deduceSchemaType(s: UnresolvedSchema): DeductedType {
     // same proiority as Swagger
-    if (allowedTypes.includes(s.type as any))
+    if (allowedOpenAPITypes.includes(s.type as any))
         return s.type as DeductedType
     if (s.items)
         return 'array'

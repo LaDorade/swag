@@ -7,15 +7,15 @@
     import Example from "./Example.svelte";
 
 
-  interface Props {
-      examples: Record<string, ExampleObject | ReferenceObject>;
-  }
+    interface Props {
+        examples: Record<string, ExampleObject | ReferenceObject>;
+    }
 
-  let {
-      examples,
-  }: Props = $props();
+    let {
+        examples,
+    }: Props = $props();
 
-  let activeExample: string | null = $state(Object.keys(examples)[0] ?? null)
+    let activeExample: string | null = $derived(Object.keys(examples)[0] ?? null)
 </script>
 
 <div class="flex flex-col leading-6">

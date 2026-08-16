@@ -3,7 +3,7 @@ class Settings {
         /**
          * Resolution du sous-schéma des arrays, même quand il s'agit d'une $ref
          * Si oui, ne compte pas dans le décompte de la profondeur maximale de résolution des sous-schémas
-         * @see {@link Settings.resolution.schemaMaxResolutionDepth}
+         * @see {@link Settings#resolution.schemaMaxResolutionDepth}
          */
         alwaysResolveArraySubSchema: true,
         /**
@@ -23,6 +23,10 @@ class Settings {
         /**
          * Afficher les lignes d'items dans les arrays
          * Ajoute une ligne "Items:" qui wrap les items de l'array
+         * TODO: Pas d'effet si le champs "items" de l'array a une description et/ou un défaut
+         * @example
+         * .bijour array<string>
+         *   Items: string
          */
         showItemsLineOnArray: true,
         /**
@@ -30,7 +34,7 @@ class Settings {
          */
         showPropertiesPaths: false,
         /**
-         * Afficher les références
+         * Afficher les références résolues (celles non résolues sont toujours affichées)
          */
         showResolvedReferences: true
     })

@@ -30,47 +30,18 @@ export interface UnresolvedSchema {
 }
 
 export type ResolvedSchema = UnresolvedSchema & {$ref?: never}
+export type Schema = UnresolvedSchema;
 
-
-export const allowedTypes = [
+export const allowedOpenAPITypes = [
     'string', 'number', 'integer',
     'boolean', 'object', 'array'
 ] as const;
 
-export type AllowedTypes = typeof allowedTypes[number];
+export type AllowedOpenAPITypes = typeof allowedOpenAPITypes[number];
 
 export type DeductedType =
-    | AllowedTypes
+    | AllowedOpenAPITypes
     | "allOf"
     | "anyOf"
     | "oneOf"
     | "invalid"
-
-export interface Schema {
-    description?: string;
-    type?: AllowedTypes | (string & {});
-    format?: string;
-    default?: string;
-
-    const?: string;
-    enum?: string[];
-
-    required?: string[];
-    properties?: Record<string, UnresolvedSchema>;
-    additionalProperties?: boolean; // TODO: support OAS Extension
-
-    items?: UnresolvedSchema,
-
-    minimum?: number;
-    maximum?: number;
-
-    examples?: Record<string, unknown>
-
-    // TODO:
-    // https://spec.openapis.org/oas/v3.2.0.html#generic-data-structure-model
-    // $id, $defs, $dynamicDefs, $dynamicAnchor
-    // discriminator
-    // allOf
-    // anyOf
-    // oneOf
-}

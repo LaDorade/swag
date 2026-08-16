@@ -2,20 +2,20 @@
     import Type from "./Type.svelte"
     import Ref from "./Ref.svelte";
     import { settings } from "#lib/stores/Settings.svelte.js";
-
-    import type { ResolutionType } from "#lib/stores/Resovler.svelte.js";
     import { typeToColor } from "#lib";
+
+    import type { ResolutionStatus } from "#lib/openApi/resolveObject.js";
 
     interface Props {
         rootData: {
             type: string | undefined | null;
             ref: string | undefined | null;
-            resolutionType: ResolutionType;
+            resolutionStatus: ResolutionStatus;
         };
         innerData?: {
             type: string | undefined | null;
             ref: string | undefined | null;
-            resolutionType: ResolutionType;
+            resolutionStatus: ResolutionStatus;
         } | null | undefined;
     }
 
@@ -33,7 +33,7 @@
     </span>{#if innerData}
         <span class="inline-block text-xs font-bold text-gray-700">&#x3008;<Type rootData={innerData} />&#x3009;</span>
     {/if}
-    {#if rootData.resolutionType !== 'resolved' || settings.display.showResolvedReferences}
-        <Ref ref={rootData.ref} resolutionType={rootData.resolutionType} />
+    {#if rootData.resolutionStatus !== 'resolved' || settings.display.showResolvedReferences}
+        <Ref ref={rootData.ref} resolutionType={rootData.resolutionStatus} />
     {/if}
 </span>

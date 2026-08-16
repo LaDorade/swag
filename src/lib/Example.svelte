@@ -13,8 +13,8 @@
         example,
     }: Props = $props();
 
-    let exampleResolved = $derived(specStore.resolveObject<ExampleObject>(example))
-    let value = $derived(exampleResolved?.value ?? null)
+    let exampleResolution = $derived(specStore.evaluate<ExampleObject>(example))
+    let value = $derived(exampleResolution.ok ? exampleResolution.obj.value : null)
 </script>
 
 {#if value}

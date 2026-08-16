@@ -1,10 +1,10 @@
 <script lang="ts">
     import { getColorFromResolutionType, getSchemaAnchor } from "#lib";
-    import type { ResolutionType } from "#lib/stores/Resovler.svelte.js";
+    import type { ResolutionStatus } from "#lib/openApi/resolveObject.js";
 
     interface Props {
         ref?: string | undefined | null;
-        resolutionType: ResolutionType;
+        resolutionType: ResolutionStatus;
     }
     let { ref, resolutionType }: Props = $props();
 

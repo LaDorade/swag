@@ -1,41 +1,36 @@
-import type {
-    HeaderObject,
-    MediaTypeObject,
-    OpenAPIObject,
-    ParameterObject,
-    ReferenceObject,
-    RequestBodyObject,
-    ResponseObject
-} from "#types/oas.js"
+import type { OpenAPIObject, } from "#types/oas.js"
 
-export type ReferencableTypes =
-    | ParameterObject
-    | ResponseObject
-    | RequestBodyObject
-    | MediaTypeObject
-    | HeaderObject;
-
-export interface ResolvedRef<T extends ReferencableTypes> {
-    resolved: T | ReferenceObject | null;
-    ref?: string;
-    name?: string;
-    error?: string;
-}
+export type ResolvedRef<T> =
+    ( { obj: T;    ref?: string;  ok: true }
+    | { obj: null; error: string; ok: false })
+    & {
+        name?: string;
+    }
 
 /**
  * https://spec.openapis.org/oas/v3.2.0.html#appendix-f-examples-of-base-uri-determination-and-reference-resolution
  * Given a reference object and a spec, resolve the reference to a value.
  */
-export function resolveRef<T extends ReferencableTypes>(
-    ref?: ReferenceObject,
+export function resolveRef<T>(
+    ref?: {$ref?: string},
     spec?: OpenAPIObject,
 ): ResolvedRef<T> {
-    if (!ref) return { resolved: null };
-    if (!spec) return { resolved: null };
+    if (!ref || !ref.$ref) return {
+        obj: null, error: 'Missing ref', ok: false,
+    };
+    if (!spec) return {
+        obj: null,
+        error: 'Missing Spec',
+        ok: false,
+    };
 
     const uri = ref.$ref;
     if (!uri.startsWith("#/")) {
-        return { resolved: null, error: `Only local references are supported: ${uri}` };
+        return {
+            obj: null,
+            error: `Only local references are supported: ${uri}`,
+            ok: false,
+        };
     }
 
     const path = uri.slice(2).split('/');
@@ -44,13 +39,19 @@ export function resolveRef<T extends ReferencableTypes>(
     for (const seg of path) {
         cur = cur?.[seg];
         if (!cur) {
-            return { resolved: null, name, error: `Local Reference not found: ${uri}` };
+            return {
+                obj: null,
+                name,
+                error: `Local Reference not found: ${uri}`,
+                ok: false,
+            };
         }
     }
     return {
-        resolved: cur,
+        obj: cur,
         name,
         ref: uri,
+        ok: true,
     };
 }
 
@@ -59,13 +60,18 @@ export function resolveRef<T extends ReferencableTypes>(
  */
 export class RefResolver {
     spec: OpenAPIObject;
-    cache: Record<string, ResolvedRef<ReferencableTypes>> = {};
+    cache: Record<string, ResolvedRef<unknown>> = {};
 
     constructor(spec: OpenAPIObject) {
         this.spec = spec;
     }
 
-    resolve<T extends ReferencableTypes>(ref: ReferenceObject): ResolvedRef<T> {
+    resolve<T>(ref: {$ref?: string}): ResolvedRef<T> {
+        if (!ref || !ref.$ref) return {
+            ok: false,
+            obj: null,
+            error: 'Missing Ref'
+        };
         const cached = this.cache[ref.$ref];
         if (cached) {
             // console.info(`Cache hit: ${ref.$ref}`);

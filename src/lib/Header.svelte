@@ -12,24 +12,25 @@
         name,
     }: Props = $props();
 
-    let headerResolved = $derived(specStore.resolveObject<HeaderObject>(header));
+    let headerResolution = $derived(specStore.evaluate<HeaderObject>(header));
 </script>
 
-{#if headerResolved}
+{#if headerResolution.ok}
+    {@const resolvedHeader = headerResolution.obj}
     <div class="flex flex-col">
-        {#if headerResolved.schema}
+        {#if resolvedHeader.schema}
             <Schema
                 resolutionDepth={1}
                 schemaName={name}
-                schema={headerResolved.schema}
+                schema={resolvedHeader.schema}
             />
-        {:else if headerResolved.content}
+        {:else if resolvedHeader.content}
             <span class="text-red-500">Not supported "Content" in headers</span>
         {:else}
             <span class="italic text-gray-500">Nothing here...</span>
         {/if}
         <span class="pl-2 text-sm text-gray-600">
-            {headerResolved.description}
+            {resolvedHeader.description}
         </span>
     </div>
 {/if}

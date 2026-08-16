@@ -1,20 +1,27 @@
 import { untrack } from "svelte";
-import { resolveSchema, type ResolutionResult } from "../Schema/resolveSchema";
+import {
+    evaluateNode,
+    type ConcretTypes,
+    type ReferenceTypes,
+    type ResolutionResult,
+    type ResolutionStatus,
+} from "../openApi/resolveObject";
 
 import { settings } from "./Settings.svelte";
+
+import { RefResolver } from "../openApi/RefResolver";
 
 import type { ResolvedSchema, UnresolvedSchema } from "#types"
 import type {
     OpenAPIObject,
-    ReferenceObject,
 } from "#types/oas.js"
-import { RefResolver, type ReferencableTypes, type ResolvedRef } from "../openApi/RefResolver";
+import { SvelteSet } from "svelte/reactivity";
 
 
 class Spec {
     spec?: OpenAPIObject;
 
-    errors: Record<string, string> = $state({});
+    errors = new SvelteSet<string>()
 
     refResolver?: RefResolver;
 
@@ -28,68 +35,50 @@ class Spec {
         return this.refResolver;
     }
 
-    resolveRef<T extends ReferencableTypes>(
-        ref: ReferenceObject
-    ): ResolvedRef<T> {
-        // TODO: function will become async
-        const res = this.#getRefResolver().resolve<T>(ref)
-
-        // FIXME: don't do that, dont use $derived with this
+    evaluate<
+        T extends ConcretTypes,
+        R extends ReferenceTypes = ReferenceTypes,
+    >(
+        obj: T | R,
+        shouldResolveRef = true
+    ): ResolutionResult<T, R> {
+        const res = evaluateNode<T, R>(
+            this.#getRefResolver(),
+            obj,
+            {
+                follow: shouldResolveRef,
+                maxFollow: settings.resolution.forwardReferenceMaxDepth
+            },
+        )
+        // Don't do this, because we surely are in a $derived context
         untrack(() => {
-            if (res.error) {
-                this.errors[ref.$ref] = res.error;
+            if (res.status === 'unresolved' && res.error) {
+                this.errors.add(res.error)
             }
-        });
+        })
         return res;
     }
 
-    resolveObject<T extends ReferencableTypes>(
-        obj: T | ReferenceObject
-    ): T | null {
-        if ("$ref" in obj) {
-            const res = this.resolveRef<T>(obj);
-            if (!res.resolved) return null;
-            // FIXME: handle multiples ref
-            if ('$ref' in res.resolved) {
-                // FIXME: don't do that, dont use $derived with this
-                untrack(() => {
-                    this.errors[obj.$ref] = `Nested references not supported: ${obj.$ref}`;
-                });
-                return null
-            }
-            return res.resolved;
-        }
-        return obj;
-    }
-
-    resolveSchema (schema: UnresolvedSchema, depth: number): ResolutionResult {
-        return resolveSchema(
-            this.#getRefResolver(),
-            schema,
-            depth,
-            settings.resolution.forwardReferenceMaxDepth
-        )
-    }
-
+    // FIXME: This 3 methods should be moved & renamed
     _shouldResolveArraySubSchema(
-        resolvedSchema: ResolutionResult,
+        resolvedSchema: ResolutionResult<ResolvedSchema>,
         resolutionDepth: number
     ): boolean {
-        if (!resolvedSchema.schema.items) {
+        if (!('items' in resolvedSchema.obj)) {
             return false;
         }
-        if (resolvedSchema?.resolutionType === 'resolved'){
+        if (resolvedSchema?.status === 'resolved'){
             if (resolutionDepth <= 1) {
                 return settings.resolution.alwaysResolveArraySubSchema;
             }
-        } else if (resolvedSchema?.resolutionType === 'inline'){
+        } else if (resolvedSchema?.status === 'inline'){
             if (resolutionDepth <= 0) {
                 return settings.resolution.alwaysResolveArraySubSchema;
             }
         }
-        return resolvedSchema.resolved;
+        return resolvedSchema.ok;
     }
-    _newDepth(depth: number, resolutionType: ResolutionResult['resolutionType']): number {
+    _newDepth(depth: number, resolutionType: ResolutionStatus): number {
         depth = depth - 1;
         // Inline ARE in the schema, so we dont count them
         if (resolutionType === 'inline') {
@@ -99,8 +88,8 @@ class Spec {
     }
     _newInnerArrayDepth(
         depth: number,
-        resolutionType: ResolutionResult['resolutionType'],
-        resolvedArrayInnerSchemaResolutionType: ResolutionResult['resolutionType']
+        resolutionType: ResolutionStatus,
+        resolvedArrayInnerSchemaResolutionType: ResolutionStatus
     ): number {
         depth = depth - 1;
         // Special case of inline schema array with inline subSchema
@@ -116,35 +105,37 @@ class Spec {
 
     /**
      * Resolves a schema full, including any referenced schemas.
-     * Until the schema is fully resolved, the depth is reduced to 0.
+     * Until the schema is fully resolved or the depth is reduced to 0.
      */
-    resolveSchemaFull(schema: UnresolvedSchema, depth: number): ResolvedSchema | UnresolvedSchema {
-        const res = resolveSchema(
+    evaluateSchemaFull(schema: UnresolvedSchema, depth: number): ResolvedSchema | UnresolvedSchema {
+        const res = evaluateNode<ResolvedSchema, UnresolvedSchema>(
             this.#getRefResolver(),
             schema,
-            depth,
-            settings.resolution.forwardReferenceMaxDepth
+            {
+                follow: true,
+                maxFollow: settings.resolution.forwardReferenceMaxDepth
+            }
         );
-        const newDepth = this._newDepth(depth, res.resolutionType);
+        const newDepth = this._newDepth(depth, res.status);
         if (newDepth <= 0) {
-            return res.schema;
+            return res.obj;
         }
 
-        if (res.schema.properties) {
-            for (const key in res.schema.properties) {
-                const obj = this.resolveSchemaFull(res.schema.properties[key], newDepth);
-                res.schema.properties[key] = obj;
+        if (res.obj.properties) {
+            for (const key in res.obj.properties) {
+                const obj = this.evaluateSchemaFull(res.obj.properties[key], newDepth);
+                res.obj.properties[key] = obj;
             }
         }
-        if (res.schema.items && this._shouldResolveArraySubSchema(res, depth)) {
+        if (res.obj.items && this._shouldResolveArraySubSchema(res, depth)) {
             // Avoid resolving the inner schema twice
-            const innerResolutionType = res.schema.items.$ref ? 'resolved' : 'inline';
-            const innerArrayDepth = this._newInnerArrayDepth(depth, res.resolutionType, innerResolutionType);
+            const innerResolutionType = res.obj.items.$ref ? 'resolved' : 'inline';
+            const innerArrayDepth = this._newInnerArrayDepth(depth, res.status, innerResolutionType);
 
-            const arr = this.resolveSchemaFull(res.schema.items, innerArrayDepth);
-            res.schema.items = arr;
+            const arr = this.evaluateSchemaFull(res.obj.items, innerArrayDepth);
+            res.obj.items = arr;
         }
-        return res.schema;
+        return res.obj;
     }
 }
 

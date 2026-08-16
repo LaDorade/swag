@@ -5,17 +5,22 @@
     import { settings } from "#lib/stores/Settings.svelte.js";
     import { deduceSchemaType } from "..";
 
-    import type { UnresolvedSchema } from "#types";
+    import type { ResolvedSchema, UnresolvedSchema } from "#types";
     import type { Snippet } from "svelte";
 
     interface Props {
         root?: boolean;
-        open?: boolean;
+        open?: boolean
+        /**
+         * null -> dont want to show name at all
+         * undefined -> try to deduce it
+         * string -> use that
+         */
         schemaName?: string | null;
         schema: UnresolvedSchema;
         resolutionDepth?: number;
         parentName?: string | null;
-        lang?: 'json' | 'yaml' | 'xml' | 'text',
+        // lang?: 'json' | 'yaml' | 'xml' | 'text',
         beforeName?: Snippet;
     }
 
@@ -26,30 +31,32 @@
         open = $bindable(false),
         resolutionDepth = 0,
         parentName,
-        lang = 'json',
+        // lang = 'json',
         beforeName,
     }: Props = $props();
 
-    let resolvedSchema = $derived(specStore.resolveSchema(s, resolutionDepth))
-    let deductedType = $derived(deduceSchemaType(resolvedSchema.schema))
-    let newDepth = $derived(specStore._newDepth(resolutionDepth, resolvedSchema.resolutionType))
+    let resolvedSchema = $derived(specStore.evaluate<ResolvedSchema, UnresolvedSchema>(s, resolutionDepth > 0))
+    let deductedType = $derived(deduceSchemaType(resolvedSchema.obj))
+    let newDepth = $derived(specStore._newDepth(resolutionDepth, resolvedSchema.status))
 
-    /* Inner Schema (array only for now)
-        Used only for type display
-    */
+    /*
+     * Inner Schema (array only for now)
+     * Used only for type display
+     */
     let innerSchema = $derived.by(() => {
-        if (!resolvedSchema.schema.items) return null;
+        if (!resolvedSchema.ok) return null;
+        if (!resolvedSchema.obj.items) return null;
 
         const shouldResolveInnerRef = specStore._shouldResolveArraySubSchema(resolvedSchema, resolutionDepth);
-        const resolvedArrayInnerSchema = specStore.resolveSchema(resolvedSchema.schema.items, shouldResolveInnerRef ? 1 : 0)
+        const resolvedArrayInnerSchema = specStore.evaluate(resolvedSchema.obj.items, shouldResolveInnerRef)
 
         return {
             resolution: resolvedArrayInnerSchema,
-            type: deduceSchemaType(resolvedArrayInnerSchema.schema),
+            type: deduceSchemaType(resolvedArrayInnerSchema.obj),
             ref: resolvedArrayInnerSchema.origin.$ref,
             newDepth: specStore._newInnerArrayDepth(newDepth,
-                resolvedSchema.resolutionType,
-                resolvedArrayInnerSchema.resolutionType)
+                resolvedSchema.status,
+                resolvedArrayInnerSchema.status)
         }
     })
 
@@ -61,10 +68,10 @@
     // items: {...}
     let foldable = $derived(
         // true ||
-        resolvedSchema.schema.properties
-        || (resolvedSchema.schema.items
+        resolvedSchema.obj.properties
+        || (resolvedSchema.obj.items
             && (settings.display.showItemsLineOnArray
-                || innerSchema?.resolution.schema.properties))
+                || innerSchema?.resolution.obj.properties))
     )
     // Two cases where schema doesnt have name
     // 1. Schema in array
@@ -85,9 +92,6 @@
         return settings.display.showItemsLineOnArray;
     })
 
-
-    let properties = $derived(Object.entries(resolvedSchema.schema.properties ?? {}))
-
 </script>
 
 {#snippet head()}
@@ -95,18 +99,18 @@
         <div class="w-full h-full">
             {@render beforeName?.()}
             {#if name}
-                <span class="font-mono">{name}</span>
+                <span class="inline-block font-mono">{name}</span>
             {/if}
             <Type
                 rootData={{
                     type: deductedType,
                     ref: resolvedSchema.origin.$ref,
-                    resolutionType: resolvedSchema.resolutionType,
+                    resolutionStatus: resolvedSchema.status,
                 }} innerData={innerSchema
                     ? {
                         type: innerSchema.type,
                         ref: innerSchema.ref,
-                        resolutionType: innerSchema.resolution.resolutionType,
+                        resolutionStatus: innerSchema.resolution.status,
                     }
                     : null}
             />
@@ -117,17 +121,17 @@
                 <span class="text-gray-800">{open ? '▲' : '▼'}</span>
             {/if}
         </div>
-        {#if resolvedSchema.schema.description}
+        {#if resolvedSchema.obj.description}
             <span class="pl-2 text-xs text-gray-600">
-                desc: {resolvedSchema.schema.description}</span>
+                desc: {resolvedSchema.obj.description}</span>
         {/if}
-        {#if resolvedSchema.schema.examples}
+        {#if resolvedSchema.obj.examples}
             <span class="pl-2 text-xs text-gray-600">
-                examples: {Object.values(resolvedSchema.schema.examples).join(', ')}</span>
+                examples: {Object.values(resolvedSchema.obj.examples).join(', ')}</span>
         {/if}
-        {#if resolvedSchema.schema.default}
+        {#if resolvedSchema.obj.default}
             <span class="pl-2 text-xs text-gray-600">
-                default: {resolvedSchema.schema.default}</span>
+                default: {resolvedSchema.obj.default}</span>
         {/if}
     </div>
 {/snippet}
@@ -166,7 +170,7 @@
         {#if innerSchema}
             <Schema open root={false}
                 schemaName={null}
-                schema={innerSchema.resolution.schema}
+                schema={innerSchema.resolution.obj}
                 resolutionDepth={innerSchema.newDepth}
                 parentName="{fullName}[i]"
             >
@@ -181,19 +185,17 @@
             // type: 'string'
             // properties: {...}
             // items: {...} -->
-        {#if properties.length}
-            {#each properties as [key, prop] (key)}
-                <Schema open root={false}
-                    parentName={fullName}
-                    schemaName={key}
-                    schema={prop}
-                    resolutionDepth={newDepth}
-                >
-                    {#snippet beforeName()}
-                        <span class="inline-block -mr-3">.</span>
-                    {/snippet}
-                </Schema>
-            {/each}
-        {/if}
+        {#each Object.entries(resolvedSchema.obj.properties ?? {}) as [key, prop] (key)}
+            <Schema open root={false}
+                parentName={fullName}
+                schemaName={key}
+                schema={prop}
+                resolutionDepth={newDepth}
+            >
+                {#snippet beforeName()}
+                    <span class="inline-block -mr-2">.</span>
+                {/snippet}
+            </Schema>
+        {/each}
     </div>
 </div>

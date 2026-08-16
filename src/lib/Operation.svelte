@@ -105,7 +105,7 @@
             {#if activeTab}
                 {@const tab = tabs.find(t => t.label === activeTab) ?? null}
                 {#if tab}
-                    <div class="p-2">
+                    <div class="active-tab p-2">
                         <tab.comp {...tab.props} open />
                     </div>
                 {/if}

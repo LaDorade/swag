@@ -2,6 +2,7 @@
     import Schema from "./Schema/Schema.svelte";
     import type { ParameterObject, ReferenceObject } from "#types/oas.js";
     import { specStore } from "./stores/Spec.svelte";
+    import { settings } from "./stores/Settings.svelte";
 
     interface Props {
         parameters: (ParameterObject | ReferenceObject)[]
@@ -12,12 +13,12 @@
     }: Props = $props()
 
     let {queryParams, pathParams} = $derived(parameters.reduce((acc, param) => {
-        const resolved = specStore.resolveObject<ParameterObject>(param);
-        if (resolved) {
-            if (resolved.in === 'path') {
-                acc.pathParams.push(resolved)
-            } else if (resolved.in === 'query') {
-                acc.queryParams.push(resolved)
+        const paramResolution = specStore.evaluate<ParameterObject>(param);
+        if (paramResolution.ok) {
+            if (paramResolution.obj.in === 'path') {
+                acc.pathParams.push(paramResolution.obj)
+            } else if (paramResolution.obj.in === 'query') {
+                acc.queryParams.push(paramResolution.obj)
             }
         }
         return acc;
@@ -28,14 +29,14 @@
 </script>
 
 {#snippet paramList(title: string, params: ParameterObject[])}
-    <span class="font-bold">{title}</span>
-    <ul class="flex flex-col gap-0 list-disc list-inside pl-2">
+    <span class="px-2 font-bold">{title}</span>
+    <ul class="flex flex-col gap-0 list-disc list-inside">
         {#each params as param (param)}
             {#if param.schema}
                 <Schema
                     schemaName={param.name}
                     schema={param.schema}
-                    resolutionDepth={3}
+                    resolutionDepth={settings.resolution.schemaMaxResolutionDepth}
                 />
             {:else if param.content}
                 <span class="text-red-500">Not supported "Content" in parameters</span>
@@ -46,7 +47,7 @@
     </ul>
 {/snippet}
 
-<div class="flex flex-col leading-6">
+<div class="parameters flex flex-col leading-6">
     {#if pathParams.length}
         {@render paramList('Path Params', pathParams)}
     {/if}
