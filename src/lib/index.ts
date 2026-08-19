@@ -1,5 +1,5 @@
 import { allowedOpenAPITypes, type DeductedType, type UnresolvedSchema } from "#types";
-import type { ResolutionType } from "./stores/Resovler.svelte";
+import type { ResolutionStatus } from "./openApi/resolveObject";
 
 export function getOperationAnchor(method: string, path: string): string{
     const uri = encodeURIComponent(`operation:${method}-${path}`);
@@ -39,7 +39,7 @@ export function typeToColor(type: DeductedType | (string & {})): string {
     }
 }
 
-export function getColorFromResolutionType(type: ResolutionType): string {
+export function getColorFromResolutionType(type: ResolutionStatus): string {
     switch (type) {
         case 'resolved':
         case 'inline':

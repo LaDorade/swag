@@ -9,8 +9,8 @@
     let { headers }: Props = $props()
 </script>
 
-<div class="px-2 flex flex-col gap-2">
-    <h3 class="text-base font-bold border-b border-gray-200 w-fit">Headers</h3>
+<div class="headers flex flex-col gap-2">
+    <h3 class="text-base base font-bold border-b border-gray-200 w-fit">Headers</h3>
     {#each Object.entries(headers) as [name, header] (name)}
         <Header {header} {name} />
     {/each}

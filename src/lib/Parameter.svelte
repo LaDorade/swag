@@ -1,0 +1,23 @@
+<script lang="ts">
+    import WithExample from "./WithExample.svelte";
+    import type { ParameterObject } from "#types/oas.js";
+
+    interface Props {
+        param: ParameterObject;
+    }
+    let {
+        param
+    }: Props = $props();
+
+    let {schema, examples, name} = $derived(param);
+
+</script>
+
+<div class="parameter flex flex-col leading-6">
+    {#if name}
+        <h3 class="text-sm w-fit flex items-baseline gap-2">
+            <span>Name: </span>
+            <span class="font-mono font-bold ">{name}</span></h3>
+    {/if}
+    <WithExample {schema} {examples} />
+</div>

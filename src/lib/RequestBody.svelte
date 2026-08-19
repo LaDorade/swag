@@ -26,15 +26,16 @@
 <div class="flex flex-col leading-6">
     {#if requestBodyResolution.ok}
         {@const requestBodyResolved = requestBodyResolution.obj}
-        <div class="flex items-center">
+        <div class="flex items-center px-2">
             {#if requestBodyResolved?.description}
-                <span class="px-2 leading-6 text-gray-600">{requestBodyResolved.description}</span>
+                <span class="leading-6 text-gray-600">{requestBodyResolved.description}</span>
             {:else}
-                <span class="px-2 leading-6 text-gray-400">-----</span>
+                <span class="leading-6 text-gray-400">-----</span>
             {/if}
             {#if requestBodyResolved?.content}
                 <select
-                    class="ml-auto px-2 py-1 leading-6 italic border border-gray-300 rounded"
+                    onclick={e => e.stopPropagation()}
+                    class="px-2 ml-auto py-1 leading-6 italic border border-gray-300 rounded"
                     bind:value={activeMediaType}
                 >
                     {#each Object.entries(requestBodyResolved.content) as [mediaType] (mediaType)}
@@ -45,7 +46,7 @@
         </div>
         {#if requestBodyResolved?.content && activeMediaType}
             {@const mediaTypeResolved = requestBodyResolved.content[activeMediaType]}
-            <div class="flex flex-col">
+            <div class="p-2">
                 <MediaType
                     mediaType={mediaTypeResolved}
                     open={open}

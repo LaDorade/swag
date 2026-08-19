@@ -5,7 +5,7 @@
 
     interface Props {
         name?: string;
-        example: ExampleObject | ReferenceObject;
+        example: ExampleObject | ReferenceObject | null;
     }
 
     let {
@@ -13,12 +13,12 @@
         example,
     }: Props = $props();
 
-    let exampleResolution = $derived(specStore.evaluate<ExampleObject>(example))
-    let value = $derived(exampleResolution.ok ? exampleResolution.obj.value : null)
+    let exampleResolution = $derived(example ? specStore.evaluate<ExampleObject >(example) : null)
 </script>
 
-{#if value}
-    <Editor content={JSON.stringify(value ?? '', null, 2)} />
+{#if exampleResolution?.ok}
+    {@const example = exampleResolution.obj}
+    <Editor content={JSON.stringify(example.value ?? '', null, 2)} />
 {:else}
     <span class="text-red-500">No value for example "{name}"</span>
 {/if}

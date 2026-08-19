@@ -1,8 +1,7 @@
 <script lang="ts">
-    import Schema from "./Schema/Schema.svelte";
-    import type { ParameterObject, ReferenceObject } from "#types/oas.js";
     import { specStore } from "./stores/Spec.svelte";
-    import { settings } from "./stores/Settings.svelte";
+    import Parameter from "./Parameter.svelte";
+    import type { ParameterObject, ReferenceObject } from "#types/oas.js";
 
     interface Props {
         parameters: (ParameterObject | ReferenceObject)[]
@@ -29,25 +28,19 @@
 </script>
 
 {#snippet paramList(title: string, params: ParameterObject[])}
-    <span class="px-2 font-bold">{title}</span>
-    <ul class="flex flex-col gap-0 list-disc list-inside">
-        {#each params as param (param)}
-            {#if param.schema}
-                <Schema
-                    schemaName={param.name}
-                    schema={param.schema}
-                    resolutionDepth={settings.resolution.schemaMaxResolutionDepth}
-                />
-            {:else if param.content}
-                <span class="text-red-500">Not supported "Content" in parameters</span>
-            {:else}
-                <span class="italic text-gray-500">Nothing here...</span>
-            {/if}
-        {/each}
-    </ul>
+    <div class="flex flex-col not-last:border-b border-gray-300 not-last:pb-2">
+        <span class="px-2 text-gray-700 font-bold text-base mb-1">{title}</span>
+        <ul class="px-2 flex flex-col gap-2 list-disc list-inside">
+            {#each params as param (param)}
+                <div class="not-first:border-t border-gray-200 py-2">
+                    <Parameter {param} />
+                </div>
+            {/each}
+        </ul>
+    </div>
 {/snippet}
 
-<div class="parameters flex flex-col leading-6">
+<div class="parameters flex flex-col gap-2 leading-6">
     {#if pathParams.length}
         {@render paramList('Path Params', pathParams)}
     {/if}

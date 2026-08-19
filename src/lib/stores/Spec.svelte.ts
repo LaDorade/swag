@@ -107,7 +107,7 @@ class Spec {
      * Resolves a schema full, including any referenced schemas.
      * Until the schema is fully resolved or the depth is reduced to 0.
      */
-    evaluateSchemaFull(schema: UnresolvedSchema, depth: number): ResolvedSchema | UnresolvedSchema {
+    evaluateSchemaFull(schema: UnresolvedSchema, depth: number): ResolutionResult<ResolvedSchema, UnresolvedSchema> {
         const res = evaluateNode<ResolvedSchema, UnresolvedSchema>(
             this.#getRefResolver(),
             schema,
@@ -118,13 +118,13 @@ class Spec {
         );
         const newDepth = this._newDepth(depth, res.status);
         if (newDepth <= 0) {
-            return res.obj;
+            return res;
         }
 
         if (res.obj.properties) {
             for (const key in res.obj.properties) {
                 const obj = this.evaluateSchemaFull(res.obj.properties[key], newDepth);
-                res.obj.properties[key] = obj;
+                res.obj.properties[key] = obj.obj;
             }
         }
         if (res.obj.items && this._shouldResolveArraySubSchema(res, depth)) {
@@ -133,9 +133,9 @@ class Spec {
             const innerArrayDepth = this._newInnerArrayDepth(depth, res.status, innerResolutionType);
 
             const arr = this.evaluateSchemaFull(res.obj.items, innerArrayDepth);
-            res.obj.items = arr;
+            res.obj.items = arr.obj;
         }
-        return res.obj;
+        return res;
     }
 }
 

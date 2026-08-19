@@ -125,10 +125,6 @@
             <span class="pl-2 text-xs text-gray-600">
                 desc: {resolvedSchema.obj.description}</span>
         {/if}
-        {#if resolvedSchema.obj.examples}
-            <span class="pl-2 text-xs text-gray-600">
-                examples: {Object.values(resolvedSchema.obj.examples).join(', ')}</span>
-        {/if}
         {#if resolvedSchema.obj.default}
             <span class="pl-2 text-xs text-gray-600">
                 default: {resolvedSchema.obj.default}</span>
@@ -136,7 +132,7 @@
     </div>
 {/snippet}
 
-<div class="schema w-full font-mono flex flex-col">
+<div class="schema w-full font-mono flex flex-col text-base">
     {#if renderHead}
         {#if foldable}
             <button class="text-left w-full cursor-pointer

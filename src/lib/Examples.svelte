@@ -8,7 +8,7 @@
 
 
     interface Props {
-        examples: Record<string, ExampleObject | ReferenceObject>;
+        examples: Record<string, ExampleObject | ReferenceObject | null>;
     }
 
     let {
@@ -22,10 +22,11 @@
     <div class="flex items-center">
         {#if activeExample}
             {@const example = examples[activeExample]}
-            {#if example.description}
+            {#if example?.description}
                 <span class="italic text-gray-500">{example.description}</span>
             {/if}
         {/if}
+        <span class="w-full border-b border-gray-200 mr-2"> </span>
         <div class="ml-auto flex items-baseline gap-2">
             <span>Examples:</span>
             <select
@@ -41,7 +42,7 @@
     {#if activeExample}
         {@const example = examples[activeExample]}
         <div class="mt-4">
-            <Example {example} />
+            <Example name={activeExample} {example} />
         </div>
     {/if}
 </div>

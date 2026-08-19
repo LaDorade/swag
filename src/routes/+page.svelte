@@ -16,9 +16,12 @@
     let sections = $state({
         errors: false,
         settings: false,
-        paths: false,
-        schemas: {
+        paths: {
             open: true,
+            innerOpen: false,
+        },
+        schemas: {
+            open: false,
             innerOpen: true
         }
     })
@@ -92,7 +95,7 @@
                 </div>
             </div>
         </details>
-        <details bind:open={sections.paths} class="flex flex-col open:gap-2">
+        <details bind:open={sections.paths.open} class="flex flex-col open:gap-2">
             <summary class="flex items-center list-none text-lg
                 bg-gray-50
                 border border-gray-200 rounded p-2">
@@ -106,7 +109,7 @@
             <div class="flex flex-col gap-4 py-2 pl-2 border-l border-gray-200">
                 {#each Object.entries(paths) as [path, methodData] (path)}
                     {#each Object.entries(methodData) as [method, data] (method)}
-                        <Operation open operation={{
+                        <Operation open={sections.paths.innerOpen} operation={{
                             method,
                             path,
                             operationData: data

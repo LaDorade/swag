@@ -36,38 +36,43 @@
 
 {#if responseResolution.ok}
     {@const responseResolved = responseResolution.obj}
-    <details bind:open class="border-gray-300 px-2">
-        <summary class="leading-6 text-left w-full flex items-baseline gap-2 rounded overflow-hidden">
-            <span class="font-bold">{response.code}</span>
-            <i class="px-0.5 text-xs text-gray-600 italic truncate">{response.description}</i>
+    <details bind:open class="flex flex-col leading-6">
+        <summary class="flex items-center px-2 {foldable ? 'cursor-pointer' : ''}">
+            <div class="flex gap-2 items-baseline">
+                <span class="font-bold leading-6 text-gray-700 font-mono">{response.code}</span>
+                {#if response?.description}
+                    <span class="leading-6 text-gray-600">{response.description}</span>
+                {/if}
+                {#if foldable}
+                    <span class="text-gray-600">{open ? '▲' : '▼'}</span>
+                {/if}
+            </div>
             {#if responseResolved.content}
                 <select
                     onclick={e => e.stopPropagation()}
-                    class="ml-auto px-2 py-1 leading-6 italic border border-gray-300 rounded"
+                    class="px-2 ml-auto py-1 leading-6 italic border border-gray-300 rounded"
                     bind:value={activeMediaType}
-                    disabled={!foldable || Object.keys(responseResolved.content).length === 0}
                 >
                     {#each Object.entries(responseResolved.content) as [mediaType] (mediaType)}
                         <option value={mediaType}>{mediaType}</option>
                     {/each}
                 </select>
             {/if}
-            {#if foldable}
-                <span class="px-2 text-gray-600">{open ? '▲' : '▼'}</span>
-            {/if}
         </summary>
         {#if foldable}
-            {#if responseResolved.content && activeMediaType}
-                {@const mediaTypeResolved = responseResolved.content[activeMediaType]}
-                <MediaType
-                    title={activeMediaType}
-                    mediaType={mediaTypeResolved}
-                    {open}
-                />
-            {/if}
-            {#if responseResolved.headers}
-                <Headers headers={responseResolved.headers} />
-            {/if}
+            <div class="p-2">
+                {#if responseResolved.content && activeMediaType}
+                    {@const mediaTypeResolved = responseResolved.content[activeMediaType]}
+                    <MediaType
+                        title={'Content: ' + activeMediaType}
+                        mediaType={mediaTypeResolved}
+                        {open}
+                    />
+                {/if}
+                {#if responseResolved.headers}
+                    <Headers headers={responseResolved.headers} />
+                {/if}
+            </div>
         {/if}
     </details>
 {/if}

@@ -16,7 +16,7 @@ export interface UnresolvedSchema {
     minimum?: number;
     maximum?: number;
 
-    examples?: Record<string, unknown>
+    examples?: any[];
 
     $ref?: string;
 

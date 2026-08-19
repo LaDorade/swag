@@ -23,9 +23,46 @@
         "summary": "Add a new pet to the store",
         "description": "",
         "operationId": "addPet",
+        "parameters": [
+          {
+            "name": "in_query",
+            "in": "query",
+            "schema": {
+              "type": "number"
+            },
+            "description": "hop hop hop",
+            "required": true,
+            "examples": {
+              "coinc": {
+                "value": 69
+              }
+            }
+          },
+          {
+            "name": "in_path",
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "in_query3333",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
         "responses": {
           "405": {
-            "description": "Invalid input"
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -825,6 +862,16 @@
               "items": {
                 "$ref": "#/components/schemas/User"
               }
+            },
+            "examples": {
+              "coinc": {
+                "value": [
+                  {
+                    "name": "snoup",
+                    "age": 23
+                  }
+                ]
+              }
             }
           }
         },
@@ -985,10 +1032,16 @@
         "type": "object",
         "properties": {
           "name": {
-            "type": "string"
+            "type": "string",
+            "examples": {
+              "snoup": {
+                "value": "snoup"
+              }
+            }
           },
           "age": {
-            "type": "integer"
+            "type": "integer",
+            "default": 23
           },
           "hair": {
             "type": "object",
@@ -1018,6 +1071,9 @@
           "gender": {
             "type": "string"
           }
+        },
+        "examples": {
+          "coinc": null
         }
       }
     }

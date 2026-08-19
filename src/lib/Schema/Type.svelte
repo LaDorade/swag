@@ -34,6 +34,6 @@
         <span class="inline-block text-xs font-bold text-gray-700">&#x3008;<Type rootData={innerData} />&#x3009;</span>
     {/if}
     {#if rootData.resolutionStatus !== 'resolved' || settings.display.showResolvedReferences}
-        <Ref ref={rootData.ref} resolutionType={rootData.resolutionStatus} />
+        <Ref ref={rootData.ref} status={rootData.resolutionStatus} />
     {/if}
 </span>

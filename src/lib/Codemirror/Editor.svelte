@@ -1,10 +1,9 @@
 <script lang="ts">
     import { onDestroy, onMount } from "svelte";
-    import { basicSetup, EditorView } from "codemirror";
+    import { basicSetup, EditorView, minimalSetup } from "codemirror";
     import { json } from "@codemirror/lang-json";
     import { yaml } from "@codemirror/lang-yaml";
     import { xml } from "@codemirror/lang-xml";
-    import { EditorState } from "@codemirror/state";
     import { vim } from "@replit/codemirror-vim";
 
     interface Props {
@@ -25,7 +24,15 @@
         const extensions = [
             vim(),
             basicSetup,
-            EditorState.readOnly.of(true),
+            minimalSetup,
+            EditorView.theme({
+                "&": {
+                    backgroundColor: "var(--color-white)"
+                },
+                "&.cm-editor.cm-focused": {
+                    outline: "none"
+                }
+            }),
         ];
         switch (lang) {
             case 'json': extensions.push(json()); break;
@@ -49,5 +56,5 @@
     })
 </script>
 
-<div bind:this={editorDiv}>
+<div bind:this={editorDiv} class="text-base rounded border border-transparent">
 </div>

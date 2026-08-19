@@ -4,23 +4,23 @@
 
     interface Props {
         ref?: string | undefined | null;
-        resolutionType: ResolutionStatus;
+        status: ResolutionStatus;
     }
-    let { ref, resolutionType }: Props = $props();
+    let { ref, status }: Props = $props();
 
-    let color = $derived(getColorFromResolutionType(resolutionType))
+    let color = $derived(getColorFromResolutionType(status))
 </script>
 
-{#if resolutionType !== 'inline' && ref}
+{#if status !== 'inline' && ref}
     <span class="inline-block text-xs italic {color}">
-        {#if resolutionType === 'unresolved'}
+        {#if status === 'unresolved'}
             -&rsaquo; {ref} (unresolved)
         {:else}
             <a
                 onclick={e => e.stopPropagation()}
                 href="#{getSchemaAnchor(ref)}"
                 class="hover:underline"
-            >-&rsaquo; {ref} {resolutionType === 'maxDepth' ? '(max depth)' : ''}</a>
+            >-&rsaquo; {ref} {status === 'maxDepth' ? '(max depth)' : ''}</a>
         {/if}
     </span>
 {/if}
