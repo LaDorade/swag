@@ -1,6 +1,6 @@
 <script lang="ts">
     import { getSchemaAnchor} from "#lib";
-    import Operation from "#lib/Operation.svelte";
+    import Operation from "#lib/Operation/Operation.svelte";
     import Schema from "#lib/Schema/Schema.svelte";
     import Sidebar from "#lib/Sidebar.svelte";
     import { settings } from "#lib/stores/Settings.svelte.js";
@@ -18,11 +18,11 @@
         settings: false,
         paths: {
             open: true,
-            innerOpen: false,
+            innerOpen: true,
         },
         schemas: {
             open: false,
-            innerOpen: true
+            innerOpen: false
         }
     })
 </script>
