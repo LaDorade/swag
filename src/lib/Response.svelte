@@ -63,11 +63,7 @@
             <div class="p-2">
                 {#if responseResolved.content && activeMediaType}
                     {@const mediaTypeResolved = responseResolved.content[activeMediaType]}
-                    <MediaType
-                        title={'Content: ' + activeMediaType}
-                        mediaType={mediaTypeResolved}
-                        {open}
-                    />
+                    <MediaType mediaType={mediaTypeResolved} />
                 {/if}
                 {#if responseResolved.headers}
                     <Headers headers={responseResolved.headers} />

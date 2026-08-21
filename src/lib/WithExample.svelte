@@ -13,11 +13,13 @@
         // FIXME: determiner ce qu'on fait/si cela a du sens, quand on a pas de schéma
         schema?: UnresolvedSchema;
         class?: string;
+        readOnly?: boolean;
     }
     let {
         examples,
         schema,
-        class: className = ''
+        class: className = '',
+        readOnly = true,
     }: Props = $props();
 
     let examplesName = $derived(Object.keys(examples ?? {}).concat(['__auto__']));
@@ -67,11 +69,13 @@
             {#key activeExampleName}
                 {#if activeExampleName === '__auto__'}
                     <SchemaExample
+                        {readOnly}
                         {schema}
                         resolutionDepth={settings.resolution.schemaMaxResolutionDepth}
                     />
                 {:else}
                     <Example
+                        {readOnly}
                         name={activeExampleName}
                         example={examples?.[activeExampleName] ?? null}
                     />

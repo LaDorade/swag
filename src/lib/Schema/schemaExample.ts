@@ -38,5 +38,6 @@ export function schemaToExample(schema: ResolvedSchema | UnresolvedSchema): unkn
     } else if (type === 'boolean') {
         return false;
     }
+    console.warn(`[SchemaToExample] Unsupported schema type: ${type}`);
     return "<not_set>";
 }

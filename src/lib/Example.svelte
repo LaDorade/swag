@@ -5,12 +5,14 @@
 
     interface Props {
         name?: string;
+        readOnly?: boolean;
         example: ExampleObject | ReferenceObject | null;
     }
 
     let {
         name,
         example,
+        readOnly = true,
     }: Props = $props();
 
     let exampleResolution = $derived(example ? specStore.evaluate<ExampleObject >(example) : null)
@@ -18,7 +20,10 @@
 
 {#if exampleResolution?.ok}
     {@const example = exampleResolution.obj}
-    <Editor content={JSON.stringify(example.value ?? '', null, 2)} />
+    <Editor
+        {readOnly}
+        content={JSON.stringify(example.value ?? '', null, 2)}
+    />
 {:else}
     <span class="text-red-500">No value for example "{name}"</span>
 {/if}

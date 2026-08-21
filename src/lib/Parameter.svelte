@@ -1,6 +1,7 @@
 <script lang="ts">
     import WithExample from "./WithExample.svelte";
     import type { ParameterObject } from "#types/oas.js";
+    import { getOperationContext } from "./Operation/OperationContext.svelte";
 
     interface Props {
         param: ParameterObject;
@@ -9,6 +10,7 @@
         param
     }: Props = $props();
 
+    const operationContext = getOperationContext()
     let {schema, examples, name} = $derived(param);
 
 </script>
@@ -19,5 +21,8 @@
             <span>Name: </span>
             <span class="font-mono font-bold ">{name}</span></h3>
     {/if}
-    <WithExample {schema} {examples} />
+    <WithExample
+        {schema} {examples}
+        readOnly={!operationContext.tryItOut}
+    />
 </div>

@@ -1,35 +1,34 @@
 <script lang="ts">
     import { onDestroy, onMount } from "svelte";
     import { basicSetup, EditorView } from "codemirror";
+    import { Compartment, EditorState } from "@codemirror/state";
     import { json } from "@codemirror/lang-json";
     import { yaml } from "@codemirror/lang-yaml";
     import { xml } from "@codemirror/lang-xml";
     import { vim } from "@replit/codemirror-vim";
-    import { Compartment, EditorState } from "@codemirror/state";
-    import { getOperationContext } from "#lib/Operation/OperationContext.svelte.js";
 
     interface Props {
         content: string;
-        lang?: 'json' | 'yaml' | 'xml' | 'text'
+        lang?: 'json' | 'yaml' | 'xml' | 'text',
+        readOnly?: boolean
     }
 
     let {
         content,
-        lang = 'json'
+        lang = 'json',
+        readOnly = true
     }: Props = $props();
-
-    let operationContext = getOperationContext();
 
     let editorDiv: HTMLDivElement | null = $state(null);
     let view: EditorView | null = $state(null);
-    const readOnly = new Compartment()
+    const readOnlyEditor = new Compartment()
 
     $effect(() => {
         if (!editorDiv || !view) return;
         view.dispatch({
-            effects: readOnly.reconfigure([
-                EditorState.readOnly.of(!operationContext.tryItOut),
-                EditorView.editable.of(operationContext.tryItOut)
+            effects: readOnlyEditor.reconfigure([
+                EditorState.readOnly.of(readOnly),
+                EditorView.editable.of(!readOnly)
             ])
         })
     })
@@ -39,9 +38,9 @@
 
         const extensions = [
             basicSetup,
-            readOnly.of([
-                EditorState.readOnly.of(!operationContext.tryItOut),
-                EditorView.editable.of(operationContext.tryItOut)
+            readOnlyEditor.of([
+                EditorState.readOnly.of(readOnly),
+                EditorView.editable.of(readOnly)
             ]),
             vim(),
             EditorView.theme({
@@ -77,6 +76,6 @@
 
 <div bind:this={editorDiv} class="
     text-base rounded border
-    {operationContext.tryItOut ? 'border-green-200' : 'border-transparent'}
+    {readOnly ? 'border-transparent' : 'border-green-200'}
 ">
 </div>

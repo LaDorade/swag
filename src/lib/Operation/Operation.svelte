@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { getOperationAnchor, methodToColor, stringToTailwindColor } from "#lib";
+    import { getOperationAnchor, methodToColor } from "#lib";
     import Parameters from "../Parameters.svelte";
     import RequestBody from "../RequestBody.svelte";
     import Responses from "../Responses.svelte";
@@ -29,7 +29,7 @@
     let {
         summary,
         description,
-        tags,
+        // tags,
         requestBody,
         parameters = [],
     } = $derived(operation.operationData)
@@ -100,7 +100,8 @@
                     </button>
                 {/each}
                 <div class="flex items-baseline gap-2 px-1 ml-auto text-sm">
-                    {#if tags?.length}
+                    <!-- TODO: setup tag handing -->
+                    <!-- {#if tags?.length}
                         <div class="flex items-baseline gap-2 px-2">
                             {#each tags as tag (tag)}
                                 <span class="flex items-baseline bg-gray-100 px-2 py-1
@@ -110,7 +111,7 @@
                                 </span>
                             {/each}
                         </div>
-                    {/if}
+                    {/if} -->
                     <button
                         onclick={() => (operationContext.tryItOut = !operationContext.tryItOut)}
                         class="border rounded bg-white px-2 py-1
@@ -140,6 +141,16 @@
                     </div>
                 {/if}
             </div>
+            {#if operationContext.tryItOut}
+                <div class="w-full p-2 flex justify-end border-t border-gray-200">
+                    <button class="
+                        w-fit px-2 py-1 border-blue-200 bg-blue-50 border rounded
+                        cursor-pointer hover:bg-blue-100
+                    ">
+                        Execute
+                    </button>
+                </div>
+            {/if}
         </div>
     {/if}
 </div>

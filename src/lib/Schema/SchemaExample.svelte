@@ -15,12 +15,14 @@ avec une option
         schema?: UnresolvedSchema;
         resolutionDepth?: number;
         lang?: 'json' | 'yaml' | 'xml' | 'text',
+        readOnly?: boolean;
     }
 
     let {
         schema,
         resolutionDepth = 0,
         lang = 'json',
+        readOnly = true,
     }: Props = $props();
 
     let resolvedSchema = $derived(schema ? specStore.evaluateSchemaFull(schema, resolutionDepth) : null)
@@ -30,6 +32,7 @@ avec une option
 {#if resolvedSchema}
     {#if resolvedSchema?.ok}
         <Editor
+            {readOnly}
             {lang}
             content={JSON.stringify(example, null, 2)}
         />

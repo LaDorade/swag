@@ -1,17 +1,18 @@
 <script lang="ts">
     import MediaType from "./MediaType.svelte";
     import { specStore } from "./stores/Spec.svelte";
+    import { getOperationContext } from "./Operation/OperationContext.svelte";
     import type { ReferenceObject, RequestBodyObject } from "#types/oas.js";
 
     interface Props {
       requestBody: RequestBodyObject | ReferenceObject;
-      open?: boolean;
     }
 
     let {
       requestBody,
-      open = $bindable(false)
     }: Props = $props()
+
+    const operationContext = getOperationContext()
 
     let requestBodyResolution = $derived(specStore.evaluate<RequestBodyObject>(requestBody));
 
@@ -49,7 +50,7 @@
             <div class="p-2">
                 <MediaType
                     mediaType={mediaTypeResolved}
-                    open={open}
+                    readOnly={!operationContext.tryItOut}
                 />
             </div>
         {/if}

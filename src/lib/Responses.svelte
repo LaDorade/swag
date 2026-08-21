@@ -1,5 +1,5 @@
 <script lang="ts">
-    import ResponseComp from "./Response.svelte";
+    import Response from "./Response.svelte";
     import type { ResponsesObject } from "#types/oas.js";
 
     interface Props {
@@ -14,7 +14,8 @@
 
 <div class="flex flex-col gap-2">
     {#each Object.entries(responses) as [code, response], i (code)}
-        <ResponseComp open={i === 0} response={{
+        <Response
+            open={i === 0} response={{
             ...response,
             code
         }} />
