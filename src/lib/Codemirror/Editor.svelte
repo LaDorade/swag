@@ -23,6 +23,7 @@
     let view: EditorView | null = $state(null);
     const readOnlyEditor = new Compartment()
 
+    // add/remove readonly when change occur
     $effect(() => {
         if (!editorDiv || !view) return;
         view.dispatch({
@@ -30,6 +31,16 @@
                 EditorState.readOnly.of(readOnly),
                 EditorView.editable.of(!readOnly)
             ])
+        })
+    })
+
+    // update content of CM if text changes from outside
+    $effect(() => {
+        if (!view) return;
+        view.dispatch({
+            changes: [{
+                from: 0, to: view.state.doc.length, insert: content
+            }]
         })
     })
 
@@ -72,6 +83,10 @@
             view = null;
         }
     })
+
+    export function getContent(): string | null {
+        return view?.state.doc.toString() ?? null;
+    }
 </script>
 
 <div bind:this={editorDiv} class="

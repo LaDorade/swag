@@ -1,8 +1,9 @@
 <script lang="ts">
-    import Schema from "./Schema/Schema.svelte";
-    import Example from "./Example.svelte";
-    import SchemaExample from "./Schema/SchemaExample.svelte";
-    import { settings } from "./stores/Settings.svelte";
+    import Schema from "../Schema/Schema.svelte";
+    import Editor from "../Codemirror/Editor.svelte";
+    import { settings } from "../stores/Settings.svelte";
+    import { specStore } from "../stores/Spec.svelte";
+    import { schemaToExample } from "../Schema/schemaExample";
 
     import type { UnresolvedSchema } from "#types";
     import type { ExampleObject, ReferenceObject } from "#types/oas.js";
@@ -22,8 +23,7 @@
         readOnly = true,
     }: Props = $props();
 
-    let examplesName = $derived(Object.keys(examples ?? {}).concat(['__auto__']));
-    let activeExampleName: string = $derived(examplesName[0])
+    // Tabs
     let tabs = [
         {
             label: 'Example value',
@@ -36,6 +36,35 @@
     ] as const;
     let activeTab: 'examples' | 'schema' = $state('examples');
 
+    // Examples
+    let examplesName = $state(() => Object.keys(examples ?? {}).concat(['__auto__']));
+    let activeExampleName: string = $derived(examplesName()[0])
+    let activeExample = $derived(examples?.[activeExampleName]);
+    let exampleResolution = $derived(activeExample ? specStore.evaluate<ExampleObject>(activeExample) : null)
+
+    // Schema
+    let resolvedSchema = $derived(schema
+        ? specStore.evaluateSchemaFull(schema, settings.resolution.schemaMaxResolutionDepth)
+        : null)
+    let schemaExample = $derived(resolvedSchema?.ok ? schemaToExample(resolvedSchema.obj) : null);
+
+    // Codemirror
+    let editor: Editor | null = $state(null);
+    let exampleContent = $derived.by(() => {
+        if (exampleResolution?.ok) {
+            return exampleResolution.obj.value ?? ''
+        }
+        if (schemaExample) {
+            return schemaExample;
+        }
+
+        // invalid
+        return null;
+    })
+
+    export function getEditorContent(): string | null {
+        return editor?.getContent() ?? null;
+    }
 </script>
 
 <div class="flex flex-col gap-4 bg-gray-50 rounded {className}">
@@ -56,7 +85,7 @@
                 <select
                     class="px-2 italic border border-gray-300 rounded"
                     bind:value={activeExampleName}>
-                    {#each examplesName as example (example)}
+                    {#each examplesName() as example (example)}
                         <option class="w-fit"
                             value={example}>{example.toString()}</option>
                     {/each}
@@ -65,31 +94,22 @@
         </div>
     </nav>
     <div class="border border-gray-200 rounded bg-white">
-        {#if activeTab === 'examples' && (examples || schema)}
-            {#key activeExampleName}
-                {#if activeExampleName === '__auto__'}
-                    <SchemaExample
-                        {readOnly}
-                        {schema}
-                        resolutionDepth={settings.resolution.schemaMaxResolutionDepth}
-                    />
-                {:else}
-                    <Example
-                        {readOnly}
-                        name={activeExampleName}
-                        example={examples?.[activeExampleName] ?? null}
-                    />
-                {/if}
-            {/key}
+        {#if exampleContent && activeTab === 'examples' && (examples || schema)}
+            <Editor
+                bind:this={editor}
+                {readOnly}
+                lang='json'
+                content={JSON.stringify(exampleContent, null, 2)}
+            />
         {:else if activeTab === 'schema' && schema}
             <Schema open
-                schemaName={null}
                 {schema}
                 resolutionDepth={settings.resolution.schemaMaxResolutionDepth}
             />
         {:else}
+            {console.warn(examples, schema, 'Missing schema or examples')}
             <span class="flex items-baseline gap-2 px-2 text-sm leading-8 font-mono">
-                <span>Missing examples and/or schema</span>
+                <span>Missing examples and/or schema or unresolved schema</span>
             </span>
         {/if}
     </div>

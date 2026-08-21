@@ -5,15 +5,10 @@
     import Responses from "../Responses.svelte";
     import { OperationContext } from "./OperationContext.svelte";
 
-    import type * as oas from "#types/oas.js";
-
+    import type { OperationT } from "#types";
 
     interface Props {
-        operation: {
-            path: string,
-            method: string,
-            operationData: oas.OperationObject;
-        };
+        operation: OperationT;
         open?: boolean;
     }
 
@@ -50,13 +45,24 @@
     })
     let activeTab = $derived(tabs[0]?.label ?? '')
 
-    let operationContext = OperationContext.create(() => operation.operationData);
+    let operationContext = OperationContext.create(() => operation);
 
+    /**
+     * @IO
+     */
     function toggleOpen() {
         open = !open;
         operationContext.tryItOut = false;
     }
-
+    /**
+     * @IO
+     */
+    async function execute() {
+        // TODO: validation de tous les objets pour la requête
+        const r = await operationContext.executeRequest();
+        // TODO: agir en fonction de la réponse
+        activeTab = 'Responses';
+    }
 </script>
 
 <div
@@ -112,6 +118,16 @@
                             {/each}
                         </div>
                     {/if} -->
+                    {#if operationContext.tryItOut}
+                        <button class="
+                            w-fit px-2 py-1 border-blue-200 bg-blue-50 border rounded
+                            cursor-pointer hover:bg-blue-100
+                        "
+                        onclick={execute}
+                        >
+                            Execute
+                        </button>
+                    {/if}
                     <button
                         onclick={() => (operationContext.tryItOut = !operationContext.tryItOut)}
                         class="border rounded bg-white px-2 py-1
@@ -141,16 +157,6 @@
                     </div>
                 {/if}
             </div>
-            {#if operationContext.tryItOut}
-                <div class="w-full p-2 flex justify-end border-t border-gray-200">
-                    <button class="
-                        w-fit px-2 py-1 border-blue-200 bg-blue-50 border rounded
-                        cursor-pointer hover:bg-blue-100
-                    ">
-                        Execute
-                    </button>
-                </div>
-            {/if}
         </div>
     {/if}
 </div>

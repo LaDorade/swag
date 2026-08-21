@@ -1,7 +1,7 @@
 <script lang="ts">
-    import Editor from "./Codemirror/Editor.svelte";
-    import { specStore } from "./stores/Spec.svelte";
-    import type { ExampleObject, ReferenceObject } from "../types/oas";
+    import Editor from "../Codemirror/Editor.svelte";
+    import { specStore } from "../stores/Spec.svelte";
+    import type { ExampleObject, ReferenceObject } from "#types/oas";
 
     interface Props {
         name?: string;

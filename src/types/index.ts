@@ -1,3 +1,5 @@
+import type { OperationObject } from "./oas";
+
 export interface UnresolvedSchema {
     description?: string;
     type?: string;
@@ -20,6 +22,12 @@ export interface UnresolvedSchema {
 
     $ref?: string;
 }
+
+export interface OperationT {
+    path: string,
+    method: string,
+    operationData: OperationObject;
+};
 
 export type ResolvedSchema = UnresolvedSchema & {$ref?: never}
 export type Schema = UnresolvedSchema;

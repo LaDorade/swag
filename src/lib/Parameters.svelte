@@ -18,6 +18,8 @@
                 acc.pathParams.push(paramResolution.obj)
             } else if (paramResolution.obj.in === 'query') {
                 acc.queryParams.push(paramResolution.obj)
+            } else {
+                console.warn(`Unsupported Param type: ${paramResolution.obj.in}`)
             }
         }
         return acc;

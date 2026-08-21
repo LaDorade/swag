@@ -3,7 +3,7 @@
     import type {
         ExampleObject,
         ReferenceObject
-    } from "../types/oas";
+    } from "#types/oas.js";
     import Example from "./Example.svelte";
 
 

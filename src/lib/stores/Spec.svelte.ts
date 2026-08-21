@@ -14,6 +14,7 @@ import { RefResolver } from "../openApi/RefResolver";
 import type { ResolvedSchema, UnresolvedSchema } from "#types"
 import type {
     OpenAPIObject,
+    ReferenceObject,
 } from "#types/oas.js"
 import { SvelteSet } from "svelte/reactivity";
 
@@ -37,7 +38,7 @@ class Spec {
 
     evaluate<
         T extends ConcretTypes,
-        R extends ReferenceTypes = ReferenceTypes,
+        R extends ReferenceTypes = ReferenceObject,
     >(
         obj: T | R,
         shouldResolveRef = true
